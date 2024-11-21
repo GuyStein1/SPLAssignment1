@@ -17,5 +17,8 @@ int main(int argc, char** argv){
     	delete backup;
     	backup = nullptr;
     }   
+
+
+    hello
     return 0;
 }
