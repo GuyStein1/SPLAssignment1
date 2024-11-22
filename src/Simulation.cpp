@@ -51,22 +51,24 @@ Simulation::Simulation(const string &configFilePath)
             SettlementType type = createSettlementType(std::stoi(args[2]));
             Settlement settlement(settlementName, type);
             settlements.push_back(settlement);
-            //reached here :) :)
         }
+
         else if (args[0] == "facility")
         {
-            if (args.size() != 6)
+            if (args.size() != 7)
             {
                 throw std::runtime_error("Invalid facility format in config file.");
             }
             std::string facilityName = args[1];
-            FacilityCategory category = static_cast<FacilityCategory>(std::stoi(args[2]));
+            FacilityCategory category = createFacilityCategory(std::stoi(args[2]));
             int price = std::stoi(args[3]);
             int lifeQualityImpact = std::stoi(args[4]);
             int economyImpact = std::stoi(args[5]);
             int environmentImpact = std::stoi(args[6]);
-            facilitiesOptions.emplace_back(facilityName, category, price, lifeQualityImpact, economyImpact, environmentImpact);
+            FacilityType facility(facilityName, category, price, lifeQualityImpact, economyImpact, environmentImpact);
+            facilitiesOptions.push_back(facility);
         }
+
         else if (args[0] == "plan")
         {
             if (args.size() != 3)
@@ -76,17 +78,24 @@ Simulation::Simulation(const string &configFilePath)
             std::string settlementName = args[1];
             std::string selectionPolicy = args[2];
 
-            // Find the settlement
-            auto it = std::find_if(settlements.begin(), settlements.end(),
-                                   [&settlementName](const Settlement &s)
-                                   { return s.getName() == settlementName; });
-            if (it == settlements.end())
+            SelectionPolicy* policy = createPolicy(selectionPolicy);
+
+            Settlement *p = &settlements[0];
+            for (int i = 0; i < settlements.size(); i++)
             {
-                throw std::runtime_error("Settlement not found for plan: " + settlementName);
+                if (settlements[i].getName() == settlementName)
+                {
+                    // Settlement found
+                    p = &settlements[i];
+                    break;
+                } else if (i == settlements.size() - 1)
+                {
+                    throw std::runtime_error("Settlement not found for plan: " + settlementName);
+                }
             }
 
             // Create the plan and associate it with the settlement
-            Plan plan(planCounter++, *it, selectionPolicy); // Assumes Plan has this constructor
+            Plan plan(planCounter++, *p, policy, facilitiesOptions); // Assumes Plan has this constructor
             plans.push_back(plan);
         }
         else
