@@ -51,6 +51,7 @@ Simulation::Simulation(const string &configFilePath)
             SettlementType type = createSettlementType(std::stoi(args[2]));
             Settlement settlement(settlementName, type);
             settlements.push_back(settlement);
+            //reached here :) :)
         }
         else if (args[0] == "facility")
         {
