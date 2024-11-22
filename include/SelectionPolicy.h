@@ -3,13 +3,16 @@
 #include "Facility.h"
 using std::vector;
 
+
 class SelectionPolicy {
     public:
         virtual const FacilityType& selectFacility(const vector<FacilityType>& facilitiesOptions) = 0;
         virtual const string toString() const = 0;
-        virtual SelectionPolicy* clone() const = 0;
+        virtual SelectionPolicy* clone() const = 0;        
         virtual ~SelectionPolicy() = default;
 };
+
+SelectionPolicy* createPolicy(const std::string &policyName);
 
 class NaiveSelection: public SelectionPolicy {
     public:
