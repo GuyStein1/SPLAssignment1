@@ -6,10 +6,16 @@ using std::vector;
 
 class SelectionPolicy {
     public:
+
+        // Constructor
         virtual const FacilityType& selectFacility(const vector<FacilityType>& facilitiesOptions) = 0;
+
         virtual const string toString() const = 0;
-        virtual SelectionPolicy* clone() const = 0;        
+        virtual SelectionPolicy* clone() const = 0;   
+
+        //Destructor
         virtual ~SelectionPolicy() = default;
+
 };
 
 SelectionPolicy* createPolicy(const std::string &policyName);
