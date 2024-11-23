@@ -141,3 +141,36 @@ Plan &Plan::operator=(Plan &&other){
 Plan::~Plan() {
     clean();
 }
+
+//Getter methods
+const int Plan::getlifeQualityScore() const {
+    return life_quality_score;
+}
+
+const int Plan::getEconomyScore() const {
+    return economy_score;
+}
+
+const int Plan::getEnvironmentScore() const {
+    return environment_score;
+}
+
+//Set selection policy
+void Plan::setSelectionPolicy(SelectionPolicy *newPolicy) {
+    if (selectionPolicy) {
+        delete selectionPolicy; // Clean up the existing policy
+    }
+    selectionPolicy = newPolicy; // Assign the new policy
+}
+
+void Plan::step(){
+
+
+    //Select a facilty according to selection policy
+    FacilityType chosenType = selectionPolicy->selectFacility(facilityOptions);
+
+    underConstruction.push_back(chosenType);
+}
+
+
+
