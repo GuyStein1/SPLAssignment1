@@ -10,6 +10,7 @@ const FacilityType& NaiveSelection::selectFacility(const vector<FacilityType>& f
     if (facilitiesOptions.empty() || lastSelectedIndex >= facilitiesOptions.size()) {
         throw std::runtime_error("No facilities available for selection.");
     }
+    //Upade lastSelectedIndex and naively choose the next facility
     lastSelectedIndex = lastSelectedIndex + 1;
     return facilitiesOptions[lastSelectedIndex];
 }
@@ -65,8 +66,61 @@ BalancedSelection* BalancedSelection::clone() const {
 }
 
 
+//EconomySelection implementation
+EconomySelection::EconomySelection() : lastSelectedIndex(-1) {}
+
+const FacilityType& EconomySelection::selectFacility(const vector<FacilityType>& facilitiesOptions) {
+    if (facilitiesOptions.empty()) {
+        throw std::runtime_error("No facilities available for selection.");
+    }
+    //Iterate over all facilitys to find the first facility in the ECONOMY category
+    for (int i = lastSelectedIndex + 1; i < facilitiesOptions.size(); ++i) {
+        if (facilitiesOptions[i].getCategory() == FacilityCategory::ECONOMY) {
+            lastSelectedIndex = i;
+            return facilitiesOptions[i];
+        }
+    }
+
+    throw std::runtime_error("No economy facilities available.");
+}
+
+const string EconomySelection::toString() const {
+    return "EconomySelection Policy";
+}
+
+EconomySelection* EconomySelection::clone() const {
+    return new EconomySelection(*this);
+}
 
 
+//SustainabilitySelection implementation
+SustainabilitySelection::SustainabilitySelection() : lastSelectedIndex(-1) {}
+
+const FacilityType& SustainabilitySelection::selectFacility(const vector<FacilityType>& facilitiesOptions) {
+    if (facilitiesOptions.empty()) {
+        throw std::runtime_error("No facilities available for selection.");
+    }
+    //Iterate over all facilitys to find the first facility in the ENVIRONMENT category
+    for (int i = lastSelectedIndex + 1; i < facilitiesOptions.size(); ++i) {
+        if (facilitiesOptions[i].getCategory() == FacilityCategory::ENVIRONMENT) {
+            lastSelectedIndex = i;
+            return facilitiesOptions[i];
+        }
+    }
+
+    throw std::runtime_error("No sustainability facilities available.");
+}
+
+const string SustainabilitySelection::toString() const {
+    return "SustainabilitySelection Policy";
+}
+
+SustainabilitySelection* SustainabilitySelection::clone() const {
+    return new SustainabilitySelection(*this);
+}
+
+
+//Helper function to convert string to policy
 SelectionPolicy* createPolicy(const std::string &policyName) {
     if (policyName == "nve") {
         return new NaiveSelection();
