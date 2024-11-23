@@ -86,3 +86,59 @@ FacilityCategory createFacilityCategory(int value) {
             throw std::invalid_argument("Invalid value for FacilityCategory");
     }
 }
+
+
+
+
+//test!!!!!!!!!!!!!!!!!!!!!!!!
+
+// using namespace std;
+
+// int main() {
+//     try {
+//         // Test FacilityType Constructor
+//         FacilityType ft("Hospital", FacilityCategory::LIFE_QUALITY, 5, 10, 8, 7);
+//         cout << "FacilityType created successfully!" << endl;
+//         cout << "Name: " << ft.getName() << endl;
+//         cout << "Cost: " << ft.getCost() << endl;
+//         cout << "Life Quality Score: " << ft.getLifeQualityScore() << endl;
+//         cout << "Economy Score: " << ft.getEconomyScore() << endl;
+//         cout << "Environment Score: " << ft.getEnvironmentScore() << endl;
+
+//         // Test Facility Constructor
+//         Facility f1("Hospital", "SettlementA", FacilityCategory::LIFE_QUALITY, 5, 10, 8, 7);
+//         cout << "\nFacility created successfully using parameterized constructor!" << endl;
+//         cout << f1.toString() << endl;
+
+//         // Test Facility Constructor with FacilityType
+//         Facility f2(ft, "SettlementB");
+//         cout << "\nFacility created successfully using FacilityType!" << endl;
+//         cout << f2.toString() << endl;
+
+//         // Test Facility Step Method
+//         cout << "\nTesting step() for Facility f1:" << endl;
+//         while (f1.getTimeLeft() > 0) {
+//             f1.step();
+//             cout << f1.toString() << endl;
+//         }
+//         cout << "Final Status: " << f1.toString() << endl;
+
+//         // Test setStatus Method
+//         f1.setStatus(FacilityStatus::OPERATIONAL);
+//         cout << "\nUpdated Status of f1: " << f1.toString() << endl;
+
+//         // Test createFacilityCategory
+//         cout << "\nTesting createFacilityCategory:" << endl;
+//         cout << "Category for 0: " << static_cast<int>(createFacilityCategory(0)) << endl;
+//         cout << "Category for 1: " << static_cast<int>(createFacilityCategory(1)) << endl;
+//         cout << "Category for 2: " << static_cast<int>(createFacilityCategory(2)) << endl;
+
+//         // Test invalid category
+//         cout << "Testing invalid category: ";
+//         cout << static_cast<int>(createFacilityCategory(3)) << endl; // Should throw an exception
+//     } catch (const exception &e) {
+//         cout << "Exception: " << e.what() << endl;
+//     }
+
+//     return 0;
+// }
