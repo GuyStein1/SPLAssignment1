@@ -1,5 +1,7 @@
 #include <stdexcept>
 #include "SelectionPolicy.h"
+#include <climits>
+#include <algorithm> // For std::max and std::min
 
 //NaiveSelection implementation
 NaiveSelection::NaiveSelection() : lastSelectedIndex(-1) {}
@@ -20,8 +22,47 @@ NaiveSelection* NaiveSelection::clone() const {
     return new NaiveSelection(*this);
 }
 
-//BalanceSelection implementation
+//BalancedSelection implementation
+BalancedSelection::BalancedSelection(int lifeQuality, int economy, int environment)
+    : LifeQualityScore(lifeQuality), EconomyScore(economy), EnvironmentScore(environment) {}
 
+const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>& facilitiesOptions) {
+    if (facilitiesOptions.empty()) {
+        throw std::runtime_error("No facilities available for selection.");
+    }
+
+    int minDifference = INT_MAX; //Store the min difference found
+    const FacilityType* selectedFacility = nullptr;
+
+    //Iterate over all facilitys to find the best opetion for BalancedSelection
+    for (const FacilityType& facility : facilitiesOptions) {
+        //Store current score changes for each facility
+        int lifeScore = LifeQualityScore + facility.getLifeQualityScore();
+        int economyScore = EconomyScore + facility.getEconomyScore();
+        int environmentScore = EnvironmentScore + facility.getEnvironmentScore();
+
+        //Find difference if current facility was chosen
+        int maxScore = std::max({lifeScore, economyScore, environmentScore});
+        int minScore = std::min({lifeScore, economyScore, environmentScore});
+        int difference = maxScore - minScore;
+
+        //If current difference is smaller choose facilty
+        if (difference < minDifference) {
+            minDifference = difference;
+            selectedFacility = &facility;
+        }
+    }
+
+    return *selectedFacility;
+}
+
+const string BalancedSelection::toString() const {
+    return "BalancedSelection Policy";
+}
+
+BalancedSelection* BalancedSelection::clone() const {
+    return new BalancedSelection(*this);
+}
 
 
 
