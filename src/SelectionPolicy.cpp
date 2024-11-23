@@ -10,7 +10,7 @@ const FacilityType& NaiveSelection::selectFacility(const vector<FacilityType>& f
     if (facilitiesOptions.empty() || lastSelectedIndex >= facilitiesOptions.size()) {
         throw std::runtime_error("No facilities available for selection.");
     }
-    //Upade lastSelectedIndex and naively choose the next facility
+    //Upade lastSelectedIndex and select the next facility naively
     lastSelectedIndex = lastSelectedIndex + 1;
     return facilitiesOptions[lastSelectedIndex];
 }
@@ -35,7 +35,7 @@ const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>
     int minDifference = INT_MAX; //Store the min difference found
     const FacilityType* selectedFacility = nullptr;
 
-    //Iterate over all facilitys to find the best opetion for BalancedSelection
+    //Iterate over all facilities to find the best option for BalancedSelection
     for (const FacilityType& facility : facilitiesOptions) {
         //Store current score changes for each facility
         int lifeScore = LifeQualityScore + facility.getLifeQualityScore();
@@ -73,7 +73,7 @@ const FacilityType& EconomySelection::selectFacility(const vector<FacilityType>&
     if (facilitiesOptions.empty()) {
         throw std::runtime_error("No facilities available for selection.");
     }
-    //Iterate over all facilitys to find the first facility in the ECONOMY category
+    //Iterate over all facilities to find the first facility in the ECONOMY category
     for (int i = lastSelectedIndex + 1; i < facilitiesOptions.size(); ++i) {
         if (facilitiesOptions[i].getCategory() == FacilityCategory::ECONOMY) {
             lastSelectedIndex = i;
@@ -100,7 +100,7 @@ const FacilityType& SustainabilitySelection::selectFacility(const vector<Facilit
     if (facilitiesOptions.empty()) {
         throw std::runtime_error("No facilities available for selection.");
     }
-    //Iterate over all facilitys to find the first facility in the ENVIRONMENT category
+    //Iterate over all facilities to find the first facility in the ENVIRONMENT category
     for (int i = lastSelectedIndex + 1; i < facilitiesOptions.size(); ++i) {
         if (facilitiesOptions[i].getCategory() == FacilityCategory::ENVIRONMENT) {
             lastSelectedIndex = i;
