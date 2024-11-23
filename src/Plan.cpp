@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <algorithm> // For std::find
-#include <string> // For std::to_string
+#include <string>    // For std::to_string
 
 // Constructor
 Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *selectionPolicy, const vector<FacilityType> &facilityOptions)
@@ -20,25 +20,27 @@ Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *sele
 }
 
 void Plan::clean() {
-    // Delete the selection policy 
-        delete selectionPolicy;
-        selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
+    // Delete the selection policy
+    delete selectionPolicy;
+    selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
 
     // Delete facilities from operational list
-    for (Facility *facility : facilities) {
-            delete facility;
+    for (Facility *facility : facilities)
+    {
+        delete facility;
     }
 
     // Delete facilities from under-construction list
-    for (Facility *facility : underConstruction) {
-            delete facility;
+    for (Facility *facility : underConstruction)
+    {
+        delete facility;
     }
 }
 
-//Copy Constructor
+// Copy Constructor
 Plan::Plan(const Plan &other)
     : plan_id(other.plan_id),
-      settlement(other.settlement), // Reference, so no copying needed
+      settlement(other.settlement),                    // Reference, so no copying needed
       selectionPolicy(other.selectionPolicy->clone()), // Deep copy of selection policy
       status(other.status),
       facilityOptions(other.facilityOptions),
@@ -46,31 +48,37 @@ Plan::Plan(const Plan &other)
       economy_score(other.economy_score),
       environment_score(other.environment_score),
       facilities(),
-      underConstruction() {
+      underConstruction()
+{
     // Deep copy facilities, store facilities on heap to avoid their destruction after
-    for (Facility *facility : other.facilities) {
+    for (Facility *facility : other.facilities)
+    {
         facilities.push_back(new Facility(*facility));
     }
-    for (Facility *facility : other.underConstruction) {
+    for (Facility *facility : other.underConstruction)
+    {
         underConstruction.push_back(new Facility(*facility));
     }
 }
 
-//Copy Assignment Operator
-Plan &Plan::operator=(const Plan &other){
-    if (this == &other){
+// Copy Assignment Operator
+Plan &Plan::operator=(const Plan &other) {
+    if (this == &other)
+    {
         return *this;
     }
     // Make sure settlements are equal
-    if (!settlement.isEqual(other.settlement)) {
+    if (!settlement.isEqual(other.settlement))
+    {
         throw std::invalid_argument("Cannot assign plans to different settlements.");
     }
     // Make sure facility options are the same
-    if (&facilityOptions != &other.facilityOptions) {
+    if (&facilityOptions != &other.facilityOptions)
+    {
         throw std::invalid_argument("Cannot assign plans with different facility options.");
     }
 
-    //Delete heap allocated resources
+    // Delete heap allocated resources
     clean();
 
     plan_id = other.plan_id;
@@ -79,48 +87,53 @@ Plan &Plan::operator=(const Plan &other){
     economy_score = other.economy_score;
     environment_score = other.environment_score;
 
-    //Deep copy facilities
-    for (Facility* facility : other.facilities) {
+    // Deep copy facilities
+    for (Facility *facility : other.facilities)
+    {
         facilities.push_back(new Facility(*facility));
     }
-    for (Facility* facility : other.underConstruction) {
+    for (Facility *facility : other.underConstruction)
+    {
         underConstruction.push_back(new Facility(*facility));
     }
     return *this;
 }
 
-//Move Constructor
-Plan::Plan(Plan&& other)
+// Move Constructor
+Plan::Plan(Plan &&other)
     : plan_id(other.plan_id),
-      settlement(other.settlement), // Reference, no need to reassign
+      settlement(other.settlement),           // Reference, no need to reassign
       selectionPolicy(other.selectionPolicy), // Transfer ownership
       status(other.status),
       facilityOptions(other.facilityOptions), // Reference, no need to reassign
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
       environment_score(other.environment_score),
-      facilities(std::move(other.facilities)), // Move vector
-      underConstruction(std::move(other.underConstruction)) // Move vector 
-      {
+      facilities(std::move(other.facilities)),              // Move vector
+      underConstruction(std::move(other.underConstruction)) // Move vector
+{
     // Nullify pointers to prevent double deletion
     other.selectionPolicy = nullptr;
 }
 
-//Move Assignment Operator
-Plan &Plan::operator=(Plan &&other){
-    if (this == &other){
+// Move Assignment Operator
+Plan &Plan::operator=(Plan &&other) {
+    if (this == &other)
+    {
         return *this;
     }
     // Make sure settlements are equal
-    if (!settlement.isEqual(other.settlement)) {
+    if (!settlement.isEqual(other.settlement))
+    {
         throw std::invalid_argument("Cannot assign plans to different settlements.");
     }
     // Make sure facility options are the same
-    if (&facilityOptions != &other.facilityOptions) {
+    if (&facilityOptions != &other.facilityOptions)
+    {
         throw std::invalid_argument("Cannot assign plans with different facility options.");
     }
 
-    //Delete heap allocated resources
+    // Delete heap allocated resources
     clean();
 
     plan_id = other.plan_id;
@@ -129,7 +142,7 @@ Plan &Plan::operator=(Plan &&other){
     economy_score = other.economy_score;
     environment_score = other.environment_score;
 
-    facilities = std::move(other.facilities); // Move vector
+    facilities = std::move(other.facilities);               // Move vector
     underConstruction = std::move(other.underConstruction); // Move vector
 
     other.selectionPolicy = nullptr;
@@ -137,12 +150,12 @@ Plan &Plan::operator=(Plan &&other){
     return *this;
 }
 
-//Destructor
+// Destructor
 Plan::~Plan() {
     clean();
 }
 
-//Getter methods
+// Getter methods
 const int Plan::getlifeQualityScore() const {
     return life_quality_score;
 }
@@ -155,22 +168,56 @@ const int Plan::getEnvironmentScore() const {
     return environment_score;
 }
 
-//Set selection policy
-void Plan::setSelectionPolicy(SelectionPolicy *newPolicy) {
-    if (selectionPolicy) {
+// Set selection policy
+void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
+{
+    if (selectionPolicy)
+    {
         delete selectionPolicy; // Clean up the existing policy
     }
     selectionPolicy = newPolicy; // Assign the new policy
 }
 
-void Plan::step(){
+void Plan::step() {
+    //Stage 1:
+    if (status == PlanStatus::AVALIABLE) {
+        // Stage 2: 
+        while (underConstruction.size() < static_cast<int>(settlement.getType()) + 1){
+            // Select a facilty according to selection policy
+            FacilityType chosenType = selectionPolicy->selectFacility(facilityOptions);
+            // Create a new Facility instance and add it to the underConstruction list
+            //Initialize on heap to avoid destruction out of scope
+            Facility *newFacility = new Facility(
+                chosenType.getName(),
+                settlement.getName(),
+                chosenType.getCategory(),
+                chosenType.getCost(),
+                chosenType.getLifeQualityScore(),
+                chosenType.getEconomyScore(),
+                chosenType.getEnvironmentScore());
 
+                underConstruction.push_back(newFacility);
+        }
+    }
+    //Stage 3:
+    int i = 0;
+    while (i < underConstruction.size()) {
+        Facility* facility = underConstruction[i];
 
-    //Select a facilty according to selection policy
-    FacilityType chosenType = selectionPolicy->selectFacility(facilityOptions);
+        // Decrement time left for construction
+        FacilityStatus facilityStatus = facility->step();
 
-    underConstruction.push_back(chosenType);
+        // If the facility is now operational, move it to the facilities list
+        if (facilityStatus == FacilityStatus::OPERATIONAL) {
+            facilities.push_back(facility);
+            // Remove from underConstruction
+            underConstruction.erase(underConstruction.begin() + i);
+        } else {
+            i++; // Move to the next facility only if no deletion occurred
+        }
+    }
+
+    //Stage 4: Update PlanStatus
+    status = (underConstruction.size() >= static_cast<int>(settlement.getType()) + 1) ? PlanStatus::BUSY : PlanStatus::AVALIABLE;
+
 }
-
-
-
