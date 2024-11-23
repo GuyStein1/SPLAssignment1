@@ -1,6 +1,8 @@
 #include "Settlement.h"
 #include <iostream>
 
+
+
 SettlementType createSettlementType(int value) {
     switch (value) {
         case 0: return SettlementType::VILLAGE;
@@ -10,3 +12,4 @@ SettlementType createSettlementType(int value) {
             throw std::invalid_argument("Invalid value for SettlementType");
     }
 }
+

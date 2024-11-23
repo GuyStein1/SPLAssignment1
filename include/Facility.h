@@ -15,6 +15,9 @@ enum class FacilityCategory {
     ENVIRONMENT,
 };
 
+// Convert int to FacilityCategory
+FacilityCategory createFacilityCategory(int value);
+
 
 class FacilityType {
     public:
