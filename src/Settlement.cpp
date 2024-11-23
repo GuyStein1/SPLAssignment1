@@ -22,8 +22,8 @@ const string Settlement :: toString() const {
     }
 }
 
-SettlementType createSettlementType(int value)
-{
+//Convert in to SettlementType
+SettlementType createSettlementType(int value){
     switch (value)
     {
     case 0:
@@ -35,4 +35,9 @@ SettlementType createSettlementType(int value)
     default:
         throw std::invalid_argument("Invalid value for SettlementType");
     }
+}
+
+//Implement isEqual
+bool Settlement::isEqual(const Settlement& other) const {
+    return (this->getName() == other.getName() && this->getType() == other.getType());
 }

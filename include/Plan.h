@@ -13,6 +13,17 @@ enum class PlanStatus {
 class Plan {
     public:
         Plan(const int planId, const Settlement &settlement, SelectionPolicy *selectionPolicy, const vector<FacilityType> &facilityOptions);
+        
+        //Rule of 5
+        Plan(const Plan &other); // Copy constructor
+        Plan &operator=(const Plan &other); // Copy assignment operator
+        Plan(Plan &&other); // Move constructor
+        Plan &operator=(Plan &&other); // Move assignment operator
+        ~Plan(); // Destructor
+
+        //Helper function to delete heap allocated pointers
+        void clean();
+        
         const int getlifeQualityScore() const;
         const int getEconomyScore() const;
         const int getEnvironmentScore() const;

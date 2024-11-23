@@ -24,6 +24,9 @@ public:
     SettlementType getType() const;
     const string toString() const;
 
+    //Helper function to check if 2 settlements are the same
+    bool isEqual(const Settlement& other) const;
+    
 private:
     const string name;
     SettlementType type;
