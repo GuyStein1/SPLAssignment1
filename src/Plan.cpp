@@ -20,28 +20,22 @@ Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *sele
 }
 
 void Plan::clean() {
-        // Delete the selection policy if it exists
-    if (selectionPolicy) {
+    // Delete the selection policy 
         delete selectionPolicy;
         selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
-    }
 
     // Delete facilities from operational list
     for (Facility *facility : facilities) {
-        if (facility) { //Check if facility is not null
             delete facility;
-        }
     }
 
     // Delete facilities from under-construction list
     for (Facility *facility : underConstruction) {
-        if (facility) { //Check if facility is not null
             delete facility;
-        }
     }
 }
 
-//Copy constructor
+//Copy Constructor
 Plan::Plan(const Plan &other)
     : plan_id(other.plan_id),
       settlement(other.settlement), // Reference, so no copying needed
@@ -62,7 +56,7 @@ Plan::Plan(const Plan &other)
     }
 }
 
-//Copy Assignment operator
+//Copy Assignment Operator
 Plan &Plan::operator=(const Plan &other){
     if (this == &other){
         return *this;
@@ -92,6 +86,54 @@ Plan &Plan::operator=(const Plan &other){
     for (Facility* facility : other.underConstruction) {
         underConstruction.push_back(new Facility(*facility));
     }
+    return *this;
+}
+
+//Move Constructor
+Plan::Plan(Plan&& other)
+    : plan_id(other.plan_id),
+      settlement(other.settlement), // Reference, no need to reassign
+      selectionPolicy(other.selectionPolicy), // Transfer ownership
+      status(other.status),
+      facilityOptions(other.facilityOptions), // Reference, no need to reassign
+      life_quality_score(other.life_quality_score),
+      economy_score(other.economy_score),
+      environment_score(other.environment_score),
+      facilities(std::move(other.facilities)), // Move vector
+      underConstruction(std::move(other.underConstruction)) // Move vector 
+      {
+    // Nullify pointers to prevent double deletion
+    other.selectionPolicy = nullptr;
+}
+
+//Move Assignment Operator
+Plan &Plan::operator=(Plan &&other){
+    if (this == &other){
+        return *this;
+    }
+    // Make sure settlements are equal
+    if (!settlement.isEqual(other.settlement)) {
+        throw std::invalid_argument("Cannot assign plans to different settlements.");
+    }
+    // Make sure facility options are the same
+    if (&facilityOptions != &other.facilityOptions) {
+        throw std::invalid_argument("Cannot assign plans with different facility options.");
+    }
+
+    //Delete heap allocated resources
+    clean();
+
+    plan_id = other.plan_id;
+    status = other.status;
+    life_quality_score = other.life_quality_score;
+    economy_score = other.economy_score;
+    environment_score = other.environment_score;
+
+    facilities = std::move(other.facilities); // Move vector
+    underConstruction = std::move(other.underConstruction); // Move vector
+
+    other.selectionPolicy = nullptr;
+
     return *this;
 }
 
