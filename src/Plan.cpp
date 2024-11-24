@@ -199,6 +199,7 @@ void Plan::step() {
                 underConstruction.push_back(newFacility);
         }
     }
+    
     //Stage 3:
     int i = 0;
     while (i < underConstruction.size()) {
