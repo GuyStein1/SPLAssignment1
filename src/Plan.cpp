@@ -206,14 +206,16 @@ void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
 }
 
 void Plan::step() {
-    //Stage 1:
+    // Stage 1: Check if the plan is available to proceed with construction
     if (status == PlanStatus::AVALIABLE) {
-        // Stage 2: 
-        while (underConstruction.size() < static_cast<int>(settlement.getType()) + 1){
-            // Select a facilty according to selection policy
+        // Stage 2: Ensure the number of facilities under construction meets the settlement's type limit
+        int maxConstruction = static_cast<int>(settlement.getType()) + 1; // Maximum allowed facilities under construction
+
+        while (underConstruction.size() < maxConstruction) {
+            // Select a facility according to the selection policy
             FacilityType chosenType = selectionPolicy->selectFacility(facilityOptions);
-            // Create a new Facility instance and add it to the underConstruction list
-            //Initialize on heap to avoid destruction out of scope
+
+            // Dynamically create a new Facility instance based on the selected type
             Facility *newFacility = new Facility(
                 chosenType.getName(),
                 settlement.getName(),
@@ -221,29 +223,28 @@ void Plan::step() {
                 chosenType.getCost(),
                 chosenType.getLifeQualityScore(),
                 chosenType.getEconomyScore(),
-                chosenType.getEnvironmentScore());
-
-                underConstruction.push_back(newFacility);
+                chosenType.getEnvironmentScore()
+            );
+            // Add the newly created facility to the underConstruction list
+            underConstruction.push_back(newFacility);
         }
     }
-    //Stage 3:
-    int i = 0;
-    while (i < underConstruction.size()) {
-        Facility* facility = underConstruction[i];
+    // Stage 3: Process facilities under construction
+    for (int i = underConstruction.size() - 1; i >= 0; i--) {
+        Facility *facility = underConstruction[i];
 
-        // Decrement time left for construction
+        // Update the facility's construction progress
         FacilityStatus facilityStatus = facility->step();
 
         // If the facility is now operational, move it to the facilities list
         if (facilityStatus == FacilityStatus::OPERATIONAL) {
-            facilities.push_back(facility);
-            // Remove from underConstruction
-            underConstruction.erase(underConstruction.begin() + i);
-        } else {
-            i++; // Move to the next facility only if no deletion occurred
+            facilities.push_back(facility); // Add to the list of operational facilities
+            underConstruction.erase(underConstruction.begin() + i); // Remove from underConstruction
         }
     }
-    //Stage 4: Update PlanStatus
-    status = (underConstruction.size() >= static_cast<int>(settlement.getType()) + 1) ? PlanStatus::BUSY : PlanStatus::AVALIABLE;
 
+    // Stage 4: Update the plan's status based on the number of facilities under construction
+    status = (underConstruction.size() >= static_cast<int>(settlement.getType()) + 1) ? 
+             PlanStatus::BUSY : 
+             PlanStatus::AVALIABLE;
 }
