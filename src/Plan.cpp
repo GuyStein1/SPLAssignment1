@@ -19,38 +19,47 @@ Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *sele
       underConstruction() {
 }
 
+//Helper function to delete heap allocated pointers
 void Plan::clean() {
+    //Note: No need to check for nullptr before delete, since in modern C++ delete does nothing if the pointer is null
     // Delete the selection policy
     delete selectionPolicy;
     selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
 
-    // Delete facilities from operational list
+    // Free dynamically allocated memory
     for (Facility *facility : facilities)
     {
         delete facility;
     }
+    facilities.clear(); //Remove all elements from the vector, avoiding dangling pointers to freed memory
 
-    // Delete facilities from under-construction list
+    // Free dynamically allocated memory
     for (Facility *facility : underConstruction)
     {
-        delete facility;
+        delete facility; 
     }
+    underConstruction.clear(); //Remove all elements from the vector, avoiding dangling pointers to freed memory
 }
 
 // Copy Constructor
 Plan::Plan(const Plan &other)
+    // Create a new object as a copy of an existing object
     : plan_id(other.plan_id),
-      settlement(other.settlement),                    // Reference, so no copying needed
-      selectionPolicy(other.selectionPolicy->clone()), // Deep copy of selection policy
+      settlement(other.settlement), // Reference, so no copying needed
       status(other.status),
       facilityOptions(other.facilityOptions),
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
       environment_score(other.environment_score),
       facilities(),
-      underConstruction()
+      underConstruction(),
+      // Deep copy of selection policy, using clone():
+      // The clone() method is implemented in each derived class of SelectionPolicy to create a new instance of the same class and return a pointer to it.
+      // This ensures the correct derived type is duplicated, preserving polymorphism and copying all unique attributes of the specific SelectionPolicy.
+      // It is an elegant solution for copying polymorphic objects safely and correctly.
+      selectionPolicy(other.selectionPolicy->clone())
 {
-    // Deep copy facilities, store facilities on heap to avoid their destruction after
+    // Deep copy facilities and underConstruction.
     for (Facility *facility : other.facilities)
     {
         facilities.push_back(new Facility(*facility));
@@ -63,6 +72,7 @@ Plan::Plan(const Plan &other)
 
 // Copy Assignment Operator
 Plan &Plan::operator=(const Plan &other) {
+    //Check for self-assignment to avoid unnecessary work and potential issues.
     if (this == &other)
     {
         return *this;
@@ -78,7 +88,7 @@ Plan &Plan::operator=(const Plan &other) {
         throw std::invalid_argument("Cannot assign plans with different facility options.");
     }
 
-    // Delete heap allocated resources
+    //Delete dynamically allocated memory associated with the current object (this), preventing memory leaks.
     clean();
 
     plan_id = other.plan_id;
@@ -87,7 +97,14 @@ Plan &Plan::operator=(const Plan &other) {
     economy_score = other.economy_score;
     environment_score = other.environment_score;
 
-    // Deep copy facilities
+    // Deep copy the selection policy using clone()
+    if (other.selectionPolicy) {
+        selectionPolicy = other.selectionPolicy->clone(); // Use clone() to avoid slicing
+    } else {
+        selectionPolicy = nullptr; // Handle case where the other policy is null
+    }
+
+    // Deep copy facilities and underConstruction
     for (Facility *facility : other.facilities)
     {
         facilities.push_back(new Facility(*facility));
@@ -96,28 +113,35 @@ Plan &Plan::operator=(const Plan &other) {
     {
         underConstruction.push_back(new Facility(*facility));
     }
+
     return *this;
 }
 
 // Move Constructor
 Plan::Plan(Plan &&other)
+    // Transfer ownership of resources from the source object (other) to this new instance.
     : plan_id(other.plan_id),
-      settlement(other.settlement),           // Reference, no need to reassign
+      settlement(other.settlement), // Reference, no need to reassign
       selectionPolicy(other.selectionPolicy), // Transfer ownership
       status(other.status),
       facilityOptions(other.facilityOptions), // Reference, no need to reassign
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
       environment_score(other.environment_score),
+      //Use std::move for efficient ownership transfer, avoiding deep copying.
       facilities(std::move(other.facilities)),              // Move vector
       underConstruction(std::move(other.underConstruction)) // Move vector
 {
-    // Nullify pointers to prevent double deletion
-    other.selectionPolicy = nullptr;
+
+    other.selectionPolicy = nullptr; //Nullify pointer to prevent double deletion
+    other.facilities.clear(); // Optional: leave other in a valid empty state
+    other.underConstruction.clear(); // Optional: leave other in a valid empty state
+    other.status = PlanStatus::AVALIABLE; // Reset status to a default state
 }
 
 // Move Assignment Operator
 Plan &Plan::operator=(Plan &&other) {
+    //Check for self-assignment to avoid unnecessary work and potential issues.
     if (this == &other)
     {
         return *this;
@@ -133,19 +157,22 @@ Plan &Plan::operator=(Plan &&other) {
         throw std::invalid_argument("Cannot assign plans with different facility options.");
     }
 
-    // Delete heap allocated resources
+    //Release any dynamically allocated memory owned by the current object (this) to prevent memory leaks.
     clean();
 
+    //Adopt the resources from the source object (other), efficiently transferring ownership.
     plan_id = other.plan_id;
     status = other.status;
     life_quality_score = other.life_quality_score;
     economy_score = other.economy_score;
     environment_score = other.environment_score;
 
-    facilities = std::move(other.facilities);               // Move vector
+    facilities = std::move(other.facilities);// Move vector
     underConstruction = std::move(other.underConstruction); // Move vector
 
-    other.selectionPolicy = nullptr;
+    // Transfer ownership of selectionPolicy
+    selectionPolicy = other.selectionPolicy;
+    other.selectionPolicy = nullptr; // Nullify other’s pointer to prevent double deletion
 
     return *this;
 }
@@ -199,7 +226,6 @@ void Plan::step() {
                 underConstruction.push_back(newFacility);
         }
     }
-    
     //Stage 3:
     int i = 0;
     while (i < underConstruction.size()) {
@@ -217,7 +243,6 @@ void Plan::step() {
             i++; // Move to the next facility only if no deletion occurred
         }
     }
-
     //Stage 4: Update PlanStatus
     status = (underConstruction.size() >= static_cast<int>(settlement.getType()) + 1) ? PlanStatus::BUSY : PlanStatus::AVALIABLE;
 
