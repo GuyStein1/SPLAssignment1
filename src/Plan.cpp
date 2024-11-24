@@ -4,11 +4,12 @@
 #include <stdexcept>
 #include <algorithm> // For std::find
 #include <string>    // For std::to_string
+#include <sstream> // For std::ostringstream
 
 // Constructor
 Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *selectionPolicy, const vector<FacilityType> &facilityOptions)
     : plan_id(planId),
-      settlement(settlement),
+      settlement(&settlement),
       selectionPolicy(selectionPolicy),
       status(PlanStatus::AVALIABLE),
       facilityOptions(facilityOptions),
@@ -45,7 +46,7 @@ void Plan::clean() {
 Plan::Plan(const Plan &other)
     // Create a new object as a copy of an existing object
     : plan_id(other.plan_id),
-      settlement(other.settlement), // Reference, so no copying needed
+      settlement(other.settlement), 
       status(other.status),
       facilityOptions(other.facilityOptions),
       life_quality_score(other.life_quality_score),
@@ -77,8 +78,8 @@ Plan &Plan::operator=(const Plan &other) {
     {
         return *this;
     }
-    // Make sure settlements are equal
-    if (!settlement.isEqual(other.settlement))
+    // Make sure settlements are the same
+    if (settlement != other.settlement)
     {
         throw std::invalid_argument("Cannot assign plans to different settlements.");
     }
@@ -121,7 +122,7 @@ Plan &Plan::operator=(const Plan &other) {
 Plan::Plan(Plan &&other)
     // Transfer ownership of resources from the source object (other) to this new instance.
     : plan_id(other.plan_id),
-      settlement(other.settlement), // Reference, no need to reassign
+      settlement(other.settlement), //Transfer the pointer
       selectionPolicy(other.selectionPolicy), // Transfer ownership
       status(other.status),
       facilityOptions(other.facilityOptions), // Reference, no need to reassign
@@ -142,12 +143,12 @@ Plan::Plan(Plan &&other)
 // Move Assignment Operator
 Plan &Plan::operator=(Plan &&other) {
     //Check for self-assignment to avoid unnecessary work and potential issues.
-    if (this == &other)
+    if (this == &other) 
     {
         return *this;
     }
     // Make sure settlements are equal
-    if (!settlement.isEqual(other.settlement))
+    if (settlement != other.settlement)
     {
         throw std::invalid_argument("Cannot assign plans to different settlements.");
     }
@@ -195,6 +196,10 @@ const int Plan::getEnvironmentScore() const {
     return environment_score;
 }
 
+const vector<Facility*> &Plan::getFacilities() const {
+    return facilities;
+}
+
 // Set selection policy
 void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
 {
@@ -209,7 +214,7 @@ void Plan::step() {
     // Stage 1: Check if the plan is available to proceed with construction
     if (status == PlanStatus::AVALIABLE) {
         // Stage 2: Ensure the number of facilities under construction meets the settlement's type limit
-        int maxConstruction = static_cast<int>(settlement.getType()) + 1; // Maximum allowed facilities under construction
+        int maxConstruction = static_cast<int>(settlement->getType()) + 1; // Maximum allowed facilities under construction
 
         while (underConstruction.size() < maxConstruction) {
             // Select a facility according to the selection policy
@@ -218,7 +223,7 @@ void Plan::step() {
             // Dynamically create a new Facility instance based on the selected type
             Facility *newFacility = new Facility(
                 chosenType.getName(),
-                settlement.getName(),
+                settlement->getName(),
                 chosenType.getCategory(),
                 chosenType.getCost(),
                 chosenType.getLifeQualityScore(),
@@ -244,7 +249,74 @@ void Plan::step() {
     }
 
     // Stage 4: Update the plan's status based on the number of facilities under construction
-    status = (underConstruction.size() >= static_cast<int>(settlement.getType()) + 1) ? 
+    status = (underConstruction.size() >= static_cast<int>(settlement->getType()) + 1) ? 
              PlanStatus::BUSY : 
              PlanStatus::AVALIABLE;
+}
+
+void Plan::printStatus() {
+    // Print the basic status of the plan
+    std::cout << "Plan ID: " << plan_id << "\n";
+    std::cout << "Status: " << (status == PlanStatus::AVALIABLE ? "Available" : "Busy") << "\n";
+
+    // Print details of operational facilities
+    std::cout << "Operational Facilities (" << facilities.size() << "):\n";
+    for (const Facility* facility : facilities) {
+        std::cout << "- " << facility->toString() << "\n";
+    }
+
+    // Print details of facilities under construction
+    std::cout << "Facilities Under Construction (" << underConstruction.size() << "):\n";
+    for (const Facility* facility : underConstruction) {
+        std::cout << "- " << facility->toString() << "\n";
+    }
+}
+
+void Plan::addFacility(Facility* facility) {
+    //Ensure the settlement has room for more facilities
+    int maxFacilities = static_cast<int>(settlement->getType()) + 1;
+    if (facilities.size() + underConstruction.size() >= maxFacilities) {
+        throw std::runtime_error("No room for more facilities in this settlement.");
+    }
+    // Add the facility to the operational facilities list
+    facilities.push_back(facility);
+}
+
+
+const string Plan::toString() const {
+    std::ostringstream output;
+
+    // Basic plan details
+    output << "Plan ID: " << plan_id << "\n";
+    output << "Status: " << (status == PlanStatus::AVALIABLE ? "Available" : "Busy") << "\n";
+    output << "Settlement: " << (settlement ? settlement->getName() : "None") << "\n";
+
+    // Facility options 
+    output << "Facility Options: (" << facilityOptions.size() << " total)\n";
+    for (const FacilityType& facilityType : facilityOptions) {
+        output << "  - " << facilityType.getName() << "\n";
+    }
+
+    // Facilities under construction
+    output << "Facilities Under Construction (" << underConstruction.size() << "):\n";
+    for (const Facility* facility : underConstruction) {
+        if (facility) {
+            output << "  - " << facility->toString() << "\n";
+        }
+    }
+
+    // Operational facilities
+    output << "Operational Facilities (" << facilities.size() << "):\n";
+    for (const Facility* facility : facilities) {
+        if (facility) {
+            output << "  - " << facility->toString() << "\n";
+        }
+    }
+
+    // Scores
+    output << "Life Quality Score: " << life_quality_score << "\n";
+    output << "Economy Score: " << economy_score << "\n";
+    output << "Environment Score: " << environment_score << "\n";
+
+    return output.str();
 }
