@@ -38,6 +38,6 @@ SettlementType createSettlementType(int value){
 }
 
 //Implement isEqual
-bool Settlement::isEqual(const Settlement& other) const {
-    return (this->getName() == other.getName() && this->getType() == other.getType());
-}
+// bool Settlement::isEqual(const Settlement& other) const {
+//     return (this->getName() == other.getName() && this->getType() == other.getType());
+// }
