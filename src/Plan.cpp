@@ -244,6 +244,12 @@ void Plan::step() {
         // If the facility is now operational, move it to the facilities list
         if (facilityStatus == FacilityStatus::OPERATIONAL) {
             facilities.push_back(facility); // Add to the list of operational facilities
+
+            // Update the scores based on the facility's attributes
+            life_quality_score += facility->getLifeQualityScore();
+            economy_score += facility->getEconomyScore();
+            environment_score += facility->getEnvironmentScore();
+
             underConstruction.erase(underConstruction.begin() + i); // Remove from underConstruction
         }
     }
@@ -278,6 +284,12 @@ void Plan::addFacility(Facility* facility) {
     if (facilities.size() + underConstruction.size() >= maxFacilities) {
         throw std::runtime_error("No room for more facilities in this settlement.");
     }
+
+    // Update the scores based on the facility's attributes
+    life_quality_score += facility->getLifeQualityScore();
+    economy_score += facility->getEconomyScore();
+    environment_score += facility->getEnvironmentScore();
+
     // Add the facility to the operational facilities list
     facilities.push_back(facility);
 }
