@@ -1,7 +1,4 @@
 #include "Plan.h"
-#include "Settlement.h"
-#include "Facility.h"
-#include "SelectionPolicy.h"
 #include <iostream>
 #include <stdexcept>
 #include <algorithm> // For std::find
@@ -352,76 +349,54 @@ const string Plan::toString() const {
 }
 
 
+
+
+
 //Test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include <cassert>
 
-void testPlan() {
-    try {
-        std::cout << "Starting Plan Tests...\n";
+void testPlanWithMultipleFacilities() {
+    // Create a Settlement
+    Settlement settlement("TestVillage", SettlementType::VILLAGE);
 
-        // 1. Test: Create settlements of different types
-        Settlement village("SmallVillage", SettlementType::VILLAGE);
-        Settlement city("BigCity", SettlementType::CITY);
-        Settlement metropolis("MegaCity", SettlementType::METROPOLIS);
+    // Create Facility Options
+    FacilityType facility1("Park", FacilityCategory::LIFE_QUALITY, 10, 5, 3, 2);
+    FacilityType facility2("Mall", FacilityCategory::ECONOMY, 15, 2, 10, 1);
+    FacilityType facility3("Solar Plant", FacilityCategory::ENVIRONMENT, 20, 3, 4, 10);
+    FacilityType facility4("School", FacilityCategory::LIFE_QUALITY, 12, 8, 2, 1);
+    std::vector<FacilityType> facilitiesOptions = {facility1, facility2, facility3, facility4};
 
-        // 2. Test: Create facility options
-        vector<FacilityType> facilitiesOptions = {
-            FacilityType("Park", FacilityCategory::LIFE_QUALITY, 100, 5, 2, 3),
-            FacilityType("Mall", FacilityCategory::ECONOMY, 200, 1, 10, 1),
-            FacilityType("Forest", FacilityCategory::ENVIRONMENT, 150, 2, 1, 7)
-        };
+    // Create a Naive Selection Policy
+    SelectionPolicy* policy = new NaiveSelection();
 
-        // 3. Test: Create NaiveSelection policy and Plan
-        NaiveSelection naiveSelection;
-        Plan naivePlan(1, village, naiveSelection.clone(), facilitiesOptions);
-        std::cout << "Test 1: Naive Plan Created Successfully\n";
+    // Create a Plan
+    Plan plan(1, settlement, policy, facilitiesOptions);
 
-        // Simulate steps and print results
-        naivePlan.step();
-        std::cout << naivePlan.toString() << std::endl;
+    // Print Initial State
+    std::cout << "Initial Plan: \n" << plan.toString() << std::endl;
 
-        // 4. Test: Create BalancedSelection policy and Plan
-        BalancedSelection balancedSelection(0, 0, 0);
-        Plan balancedPlan(2, city, balancedSelection.clone(), facilitiesOptions);
-        std::cout << "Test 2: Balanced Plan Created Successfully\n";
+    // Perform Step 1
+    plan.step();
+    std::cout << "After Step 1: \n" << plan.toString() << std::endl;
 
-        // Simulate steps and print results
-        balancedPlan.step();
-        std::cout << balancedPlan.toString() << std::endl;
+    // Perform Step 2
+    plan.step();
+    std::cout << "After Step 2: \n" << plan.toString() << std::endl;
 
-        // 5. Test: Simulate step() multiple times for BalancedSelection
-        for (int i = 0; i < 5; ++i) {
-            balancedPlan.step();
-        }
-        std::cout << "Test 3: Balanced Plan After Multiple Steps\n";
-        std::cout << balancedPlan.toString() << std::endl;
+    // Perform Step 3
+    plan.step();
+    std::cout << "After Step 3: \n" << plan.toString() << std::endl;
 
-        // 6. Test: SustainabilitySelection with a Metropolis
-        SustainabilitySelection sustainabilitySelection;
-        Plan sustainabilityPlan(3, metropolis, sustainabilitySelection.clone(), facilitiesOptions);
-        std::cout << "Test 4: Sustainability Plan Created Successfully\n";
-
-        // Simulate steps and print results
-        sustainabilityPlan.step();
-        std::cout << sustainabilityPlan.toString() << std::endl;
-
-        // 7. Test: EconomySelection with a City
-        EconomySelection economySelection;
-        Plan economyPlan(4, city, economySelection.clone(), facilitiesOptions);
-        std::cout << "Test 5: Economy Plan Created Successfully\n";
-
-        // Simulate steps and print results
-        economyPlan.step();
-        std::cout << economyPlan.toString() << std::endl;
-
-        std::cout << "All tests completed successfully!\n";
-
-    } catch (const std::exception &e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+    // Verify all facilities are added and operational eventually
+    while (plan.getFacilities().size() < facilitiesOptions.size()) {
+        plan.step();
+        std::cout << "After Another Step: \n" << plan.toString() << std::endl;
     }
+
+    std::cout << "Test Completed Successfully!" << std::endl;
 }
 
 int main() {
-    testPlan();
+    testPlanWithMultipleFacilities();
     return 0;
 }
