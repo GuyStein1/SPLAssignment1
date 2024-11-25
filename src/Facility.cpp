@@ -41,7 +41,7 @@ Facility :: Facility(const string &name, const string &settlementName, const Fac
     : FacilityType(name, category, price, lifeQuality_score, economy_score, environment_score),
       settlementName(settlementName), status(FacilityStatus::UNDER_CONSTRUCTIONS), timeLeft(price) {}
 
-Facility :: Facility(FacilityType &type, const string &settlementName)
+Facility :: Facility(const FacilityType &type, const string &settlementName)
     : FacilityType(type), settlementName(settlementName), status(FacilityStatus::UNDER_CONSTRUCTIONS), timeLeft(price) {}
 
 
