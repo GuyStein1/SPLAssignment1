@@ -355,7 +355,7 @@ const string Plan::toString() const {
 //Test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include <cassert>
 
-void testPlanWithMultipleFacilities() {
+void testPlanWithPolicies() {
     // Create a Settlement
     Settlement settlement("TestVillage", SettlementType::VILLAGE);
 
@@ -366,37 +366,37 @@ void testPlanWithMultipleFacilities() {
     FacilityType facility4("School", FacilityCategory::LIFE_QUALITY, 12, 8, 2, 1);
     std::vector<FacilityType> facilitiesOptions = {facility1, facility2, facility3, facility4};
 
-    // Create a Naive Selection Policy
-    SelectionPolicy* policy = new NaiveSelection();
+    // Selection policies
+    std::vector<std::pair<std::string, SelectionPolicy*>> policies = {
+        {"Naive", new NaiveSelection()},
+        {"Balanced", new BalancedSelection(0, 0, 0)},
+        {"Economy", new EconomySelection()},
+        {"Sustainability", new SustainabilitySelection()}
+    };
 
-    // Create a Plan
-    Plan plan(1, settlement, policy, facilitiesOptions);
+    // Test each selection policy
+    for (const auto& [name, policy] : policies) {
+        std::cout << "--- " << name << " Selection ---" << std::endl;
 
-    // Print Initial State
-    std::cout << "Initial Plan: \n" << plan.toString() << std::endl;
+        Plan plan(1, settlement, policy, facilitiesOptions);
+        for (int stepCount = 1; stepCount <= 4; ++stepCount) {
+            plan.step(); // Simulate steps
+        }
 
-    // Perform Step 1
-    plan.step();
-    std::cout << "After Step 1: \n" << plan.toString() << std::endl;
-
-    // Perform Step 2
-    plan.step();
-    std::cout << "After Step 2: \n" << plan.toString() << std::endl;
-
-    // Perform Step 3
-    plan.step();
-    std::cout << "After Step 3: \n" << plan.toString() << std::endl;
-
-    // Verify all facilities are added and operational eventually
-    while (plan.getFacilities().size() < facilitiesOptions.size()) {
-        plan.step();
-        std::cout << "After Another Step: \n" << plan.toString() << std::endl;
+        // Print summary
+        std::cout << "Operational Facilities: " << plan.getFacilities().size() << "\n";
+        const auto& facilities = plan.getFacilities();
+        for (const auto* facility : facilities) {
+            std::cout << "  - " << facility->getName() << "\n";
+        }
     }
-
-    std::cout << "Test Completed Successfully!" << std::endl;
 }
 
 int main() {
-    testPlanWithMultipleFacilities();
+    try {
+        testPlanWithPolicies();
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
     return 0;
 }
