@@ -7,7 +7,7 @@
 NaiveSelection::NaiveSelection() : lastSelectedIndex(-1) {}
 
 const FacilityType& NaiveSelection::selectFacility(const vector<FacilityType>& facilitiesOptions) {
-    if (facilitiesOptions.empty() || lastSelectedIndex >= facilitiesOptions.size()) {
+    if (facilitiesOptions.empty()) {
         throw std::runtime_error("No facilities available for selection.");
     }
     //Update lastSelectedIndex and select the next facility naively
