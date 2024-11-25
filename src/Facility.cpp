@@ -1,5 +1,8 @@
 #include "Facility.h"
 #include <iostream>
+#include <string>  // For std::string
+#include <sstream> // For std::ostringstream
+
 
 //FacilityType implementation:
 
@@ -42,6 +45,7 @@ Facility :: Facility(const string &name, const string &settlementName, const Fac
       settlementName(settlementName), status(FacilityStatus::UNDER_CONSTRUCTIONS), timeLeft(price) {}
 
 Facility :: Facility(const FacilityType &type, const string &settlementName)
+    // The default copy constructor of FacilityType is safe as it has no dynamic memory, preventing leaks or double deletions.
     : FacilityType(type), settlementName(settlementName), status(FacilityStatus::UNDER_CONSTRUCTIONS), timeLeft(price) {}
 
 
@@ -72,8 +76,25 @@ FacilityStatus Facility::step() {
 }
 
 const string Facility::toString() const {
+    std::ostringstream output;
+
+    // Add facility details
     string statusStr = (status == FacilityStatus::UNDER_CONSTRUCTIONS) ? "Under Construction" : "Operational";
-    return "Facility(Name: " + getName() + ", Settlement: " + settlementName + ", Status: " + statusStr + ")";
+    string categoryStr = 
+        (category == FacilityCategory::LIFE_QUALITY) ? "Life Quality" :
+        (category == FacilityCategory::ECONOMY) ? "Economy" : "Environment";
+
+    output << "Facility(Name: " << getName()
+           << ", Settlement: " << settlementName
+           << ", Category: " << categoryStr
+           << ", Cost: " << getCost()
+           << ", Life Quality Score: " << getLifeQualityScore()
+           << ", Economy Score: " << getEconomyScore()
+           << ", Environment Score: " << getEnvironmentScore()
+           << ", Time Left: " << timeLeft
+           << ", Status: " << statusStr << ")";
+
+    return output.str();
 }
 
 //Helper function to convert int to FacilityCategory
