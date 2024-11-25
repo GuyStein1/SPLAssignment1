@@ -65,6 +65,11 @@ BalancedSelection* BalancedSelection::clone() const {
     return new BalancedSelection(*this);
 }
 
+// Setter methods to update scores
+void BalancedSelection::setLifeQualityScore(int score) { LifeQualityScore = score; }
+void BalancedSelection::setEconomyScore(int score) { EconomyScore = score; }
+void BalancedSelection::setEnvironmentScore(int score) { EnvironmentScore = score; }
+
 
 //EconomySelection implementation
 EconomySelection::EconomySelection() : lastSelectedIndex(-1) {}
