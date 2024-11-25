@@ -1,5 +1,7 @@
 #include "Plan.h"
 #include "Settlement.h"
+#include "Facility.h"
+#include "SelectionPolicy.h"
 #include <iostream>
 #include <stdexcept>
 #include <algorithm> // For std::find
@@ -311,7 +313,6 @@ void Plan::addFacility(Facility* facility) {
     }
 }
 
-
 const string Plan::toString() const {
     std::ostringstream output;
 
@@ -348,4 +349,79 @@ const string Plan::toString() const {
     output << "Environment Score: " << environment_score << "\n";
 
     return output.str();
+}
+
+
+//Test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include <cassert>
+
+void testPlan() {
+    try {
+        std::cout << "Starting Plan Tests...\n";
+
+        // 1. Test: Create settlements of different types
+        Settlement village("SmallVillage", SettlementType::VILLAGE);
+        Settlement city("BigCity", SettlementType::CITY);
+        Settlement metropolis("MegaCity", SettlementType::METROPOLIS);
+
+        // 2. Test: Create facility options
+        vector<FacilityType> facilitiesOptions = {
+            FacilityType("Park", FacilityCategory::LIFE_QUALITY, 100, 5, 2, 3),
+            FacilityType("Mall", FacilityCategory::ECONOMY, 200, 1, 10, 1),
+            FacilityType("Forest", FacilityCategory::ENVIRONMENT, 150, 2, 1, 7)
+        };
+
+        // 3. Test: Create NaiveSelection policy and Plan
+        NaiveSelection naiveSelection;
+        Plan naivePlan(1, village, naiveSelection.clone(), facilitiesOptions);
+        std::cout << "Test 1: Naive Plan Created Successfully\n";
+
+        // Simulate steps and print results
+        naivePlan.step();
+        std::cout << naivePlan.toString() << std::endl;
+
+        // 4. Test: Create BalancedSelection policy and Plan
+        BalancedSelection balancedSelection(0, 0, 0);
+        Plan balancedPlan(2, city, balancedSelection.clone(), facilitiesOptions);
+        std::cout << "Test 2: Balanced Plan Created Successfully\n";
+
+        // Simulate steps and print results
+        balancedPlan.step();
+        std::cout << balancedPlan.toString() << std::endl;
+
+        // 5. Test: Simulate step() multiple times for BalancedSelection
+        for (int i = 0; i < 5; ++i) {
+            balancedPlan.step();
+        }
+        std::cout << "Test 3: Balanced Plan After Multiple Steps\n";
+        std::cout << balancedPlan.toString() << std::endl;
+
+        // 6. Test: SustainabilitySelection with a Metropolis
+        SustainabilitySelection sustainabilitySelection;
+        Plan sustainabilityPlan(3, metropolis, sustainabilitySelection.clone(), facilitiesOptions);
+        std::cout << "Test 4: Sustainability Plan Created Successfully\n";
+
+        // Simulate steps and print results
+        sustainabilityPlan.step();
+        std::cout << sustainabilityPlan.toString() << std::endl;
+
+        // 7. Test: EconomySelection with a City
+        EconomySelection economySelection;
+        Plan economyPlan(4, city, economySelection.clone(), facilitiesOptions);
+        std::cout << "Test 5: Economy Plan Created Successfully\n";
+
+        // Simulate steps and print results
+        economyPlan.step();
+        std::cout << economyPlan.toString() << std::endl;
+
+        std::cout << "All tests completed successfully!\n";
+
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+
+int main() {
+    testPlan();
+    return 0;
 }

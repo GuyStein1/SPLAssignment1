@@ -49,7 +49,7 @@ Simulation::Simulation(const string &configFilePath)
             }
             std::string settlementName = args[1];
             SettlementType type = createSettlementType(std::stoi(args[2]));
-            Settlement settlement(settlementName, type);
+            Settlement *settlement = new Settlement(settlementName, type); // Dynamically allocate
             settlements.push_back(settlement);
         }
 
@@ -80,13 +80,13 @@ Simulation::Simulation(const string &configFilePath)
 
             SelectionPolicy* policy = createPolicy(selectionPolicy);
 
-            Settlement *p = &settlements[0];
-            for (int i = 0; i < settlements.size(); i++)
+            Settlement *p = settlements[0];
+            for (size_t i = 0; i < settlements.size(); i++)
             {
-                if (settlements[i].getName() == settlementName)
+                if (settlements[i]->getName() == settlementName)
                 {
                     // Settlement found
-                    p = &settlements[i];
+                    p = settlements[i];
                     break;
                 } else if (i == settlements.size() - 1)
                 {
