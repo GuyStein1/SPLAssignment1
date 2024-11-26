@@ -128,7 +128,7 @@ Plan::Plan(Plan &&other)
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
       environment_score(other.environment_score),
-      
+
       //Use std::move for efficient ownership transfer, avoiding deep copying.
       facilities(std::move(other.facilities)),              // Move vector
       underConstruction(std::move(other.underConstruction)) // Move vector
@@ -198,6 +198,11 @@ const int Plan::getEnvironmentScore() const {
 
 const vector<Facility*> &Plan::getFacilities() const {
     return facilities;
+}
+
+// Getter for the plan's unique ID
+int Plan::getID() const {
+    return plan_id;
 }
 
 // Set selection policy

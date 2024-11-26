@@ -227,3 +227,85 @@ Simulation::~Simulation()
     // This ensures proper cleanup of BaseAction and Settlement objects
     cleanSim();
 }
+
+
+void Simulation::start() {
+    // Log the start of the simulation
+    std::cout << "The simulation has started" << std::endl;
+    isRunning = true; // Set the simulation state to running
+}
+
+void Simulation::addPlan(const Settlement &settlement, SelectionPolicy *selectionPolicy) {
+    // Create a new plan with a unique ID, using the provided settlement and selection policy
+    Plan newPlan(planCounter++, settlement, selectionPolicy, facilitiesOptions);
+
+    // Transfer ownership of newPlan to the plans vector to avoid unnecessary copying
+    plans.push_back(std::move(newPlan));
+}
+
+void Simulation::addAction(BaseAction *action) {
+    // Add the provided action to the actions log
+    actionsLog.push_back(action);
+}
+
+bool Simulation::addSettlement(Settlement *settlement) {
+    // Check if the settlement already exists
+    if (isSettlementExists(settlement->getName())) {
+        return false; // Settlement already exists, return false
+    }
+
+    // Add the new settlement to the vector
+    settlements.push_back(settlement);
+    return true; // Successfully added the settlement
+}
+
+bool Simulation::addFacility(FacilityType facility) {
+    // Check if a facility with the same name already exists
+    for (const auto &existingFacility : facilitiesOptions) {
+        if (existingFacility.getName() == facility.getName()) {
+            return false; // Facility already exists, return false
+        }
+    }
+
+    // Add the new facility type to the vector
+    facilitiesOptions.push_back(std::move(facility));
+    return true; // Successfully added the facility
+}
+
+bool Simulation::isSettlementExists(const string &settlementName) {
+    // Search for a settlement with the given name
+    for (const auto &settlement : settlements) {
+        if (settlement->getName() == settlementName) {
+            return true; // Settlement exists
+        }
+    }
+    return false; // Settlement not found
+}
+
+Settlement &Simulation::getSettlement(const string &settlementName) {
+    for (auto &settlement : settlements) {
+        if (settlement->getName() == settlementName) {
+            return *settlement; // Return a reference to the found settlement
+        }
+    }
+
+    throw std::runtime_error("Settlement not found: " + settlementName); // Throw an exception if not found
+}
+
+Plan &Simulation::getPlan(const int planID) {
+    for (auto &plan : plans) {
+        if (plan.getID() == planID) { // Assuming Plan has a getID() method
+            return plan; // Return a reference to the found plan
+        }
+    }
+
+    throw std::runtime_error("Plan not found with ID: " + std::to_string(planID)); // Throw an exception if not found
+}
+
+void Simulation::step() {
+    // Iterate through all plans and execute their step function
+    for (auto &plan : plans) {
+        plan.step();
+    }
+}
+
