@@ -226,7 +226,7 @@ void Plan::step() {
             FacilityType chosenType = selectionPolicy->selectFacility(facilityOptions);
 
             // Dynamically create a new Facility instance based on the selected type
-            Facility *newFacility = new Facility(
+            Facility* newFacility = new Facility(
                 chosenType.getName(),
                 settlement.getName(),
                 chosenType.getCategory(),
@@ -235,22 +235,8 @@ void Plan::step() {
                 chosenType.getEconomyScore(),
                 chosenType.getEnvironmentScore()
             );
-            // Add the newly created facility to the underConstruction list
-            underConstruction.push_back(newFacility);
-
-            // Update the scores based on the facility's attributes
-            life_quality_score += newFacility->getLifeQualityScore();
-            economy_score += newFacility->getEconomyScore();
-            environment_score += newFacility->getEnvironmentScore();
-
-            // Check if the current selection policy is of type BalancedSelection using dynamic_cast.
-            // If the cast succeeds, update the BalancedSelection scores with the plan's updated scores.
-            BalancedSelection *balancedPolicy = dynamic_cast<BalancedSelection *>(selectionPolicy);
-            if (balancedPolicy) {
-                balancedPolicy->setLifeQualityScore(life_quality_score);
-                balancedPolicy->setEconomyScore(economy_score);
-                balancedPolicy->setEnvironmentScore(environment_score);
-            }
+            // Use addFacility method
+            addFacility(newFacility);
         }
     }
     // Stage 3: Process facilities under construction
@@ -264,6 +250,11 @@ void Plan::step() {
         if (facilityStatus == FacilityStatus::OPERATIONAL) {
             facilities.push_back(facility); // Add to the list of operational facilities
             underConstruction.erase(underConstruction.begin() + i); // Remove from underConstruction
+
+            // Update the scores based on the facility's attributes
+            life_quality_score += facility->getLifeQualityScore();
+            economy_score += facility->getEconomyScore();
+            environment_score += facility->getEnvironmentScore();
         }
     }
 
@@ -291,28 +282,17 @@ void Plan::printStatus() {
     }
 }
 
-void Plan::addFacility(Facility* facility) {
-    //Ensure the settlement has room for more facilities
-    int maxFacilities = static_cast<int>(settlement.getType()) + 1;
-    if (facilities.size() + underConstruction.size() >= maxFacilities) {
-        throw std::runtime_error("No room for more facilities in this settlement.");
-    }
-
-    // Add the facility to the operational facilities list
-    facilities.push_back(facility);
-
-    // Update the scores based on the facility's attributes
-    life_quality_score += facility->getLifeQualityScore();
-    economy_score += facility->getEconomyScore();
-    environment_score += facility->getEnvironmentScore();
+void Plan::addFacility(Facility *facility) {
+    // Add the newly created facility to the underConstruction list
+    underConstruction.push_back(facility);
 
     // Check if the current selection policy is of type BalancedSelection using dynamic_cast.
     // If the cast succeeds, update the BalancedSelection scores with the plan's updated scores.
     BalancedSelection *balancedPolicy = dynamic_cast<BalancedSelection *>(selectionPolicy);
     if (balancedPolicy) {
-        balancedPolicy->setLifeQualityScore(life_quality_score);
-        balancedPolicy->setEconomyScore(economy_score);
-        balancedPolicy->setEnvironmentScore(environment_score);
+        balancedPolicy->setLifeQualityScore(life_quality_score + facility->getLifeQualityScore());
+        balancedPolicy->setEconomyScore(economy_score + facility->getEconomyScore());
+        balancedPolicy->setEnvironmentScore(environment_score + facility->getEnvironmentScore());
     }
 }
 
