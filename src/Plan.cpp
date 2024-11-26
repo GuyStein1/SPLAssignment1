@@ -71,51 +71,51 @@ Plan::Plan(const Plan &other)
 }
 
 // Copy Assignment Operator
-Plan &Plan::operator=(const Plan &other) {
-    //Check for self-assignment to avoid unnecessary work and potential issues.
-    if (this == &other)
-    {
-        return *this;
-    }
-    // Make sure settlements are the same
-    if (!settlement.isEqual(other.settlement))
-    {
-        throw std::invalid_argument("Cannot assign plans to different settlements.");
-    }
-    // Make sure facility options are the same
-    if (&facilityOptions != &other.facilityOptions)
-    {
-        throw std::invalid_argument("Cannot assign plans with different facility options.");
-    }
+// Plan &Plan::operator=(const Plan &other) {
+//     //Check for self-assignment to avoid unnecessary work and potential issues.
+//     if (this == &other)
+//     {
+//         return *this;
+//     }
+//     // Make sure settlements are the same
+//     if (!settlement.isEqual(other.settlement))
+//     {
+//         throw std::invalid_argument("Cannot assign plans to different settlements.");
+//     }
+//     // Make sure facility options are the same
+//     if (&facilityOptions != &other.facilityOptions)
+//     {
+//         throw std::invalid_argument("Cannot assign plans with different facility options.");
+//     }
 
-    //Delete dynamically allocated memory associated with the current object (this), preventing memory leaks.
-    clean();
+//     //Delete dynamically allocated memory associated with the current object (this), preventing memory leaks.
+//     clean();
 
-    plan_id = other.plan_id;
-    status = other.status;
-    life_quality_score = other.life_quality_score;
-    economy_score = other.economy_score;
-    environment_score = other.environment_score;
+//     plan_id = other.plan_id;
+//     status = other.status;
+//     life_quality_score = other.life_quality_score;
+//     economy_score = other.economy_score;
+//     environment_score = other.environment_score;
 
-    // Deep copy the selection policy using clone()
-    if (other.selectionPolicy) {
-        selectionPolicy = other.selectionPolicy->clone(); // Use clone() to avoid slicing
-    } else {
-        selectionPolicy = nullptr; // Handle case where the other policy is null
-    }
+//     // Deep copy the selection policy using clone()
+//     if (other.selectionPolicy) {
+//         selectionPolicy = other.selectionPolicy->clone(); // Use clone() to avoid slicing
+//     } else {
+//         selectionPolicy = nullptr; // Handle case where the other policy is null
+//     }
 
-    // Deep copy facilities and underConstruction
-    for (Facility *facility : other.facilities)
-    {
-        facilities.push_back(new Facility(*facility));
-    }
-    for (Facility *facility : other.underConstruction)
-    {
-        underConstruction.push_back(new Facility(*facility));
-    }
+//     // Deep copy facilities and underConstruction
+//     for (Facility *facility : other.facilities)
+//     {
+//         facilities.push_back(new Facility(*facility));
+//     }
+//     for (Facility *facility : other.underConstruction)
+//     {
+//         underConstruction.push_back(new Facility(*facility));
+//     }
 
-    return *this;
-}
+//     return *this;
+// }
 
 // Move Constructor
 Plan::Plan(Plan &&other)
@@ -141,42 +141,42 @@ Plan::Plan(Plan &&other)
 }
 
 // Move Assignment Operator
-Plan &Plan::operator=(Plan &&other) {
-    //Check for self-assignment to avoid unnecessary work and potential issues.
-    if (this == &other) 
-    {
-        return *this;
-    }
-    // Make sure settlements are equal
-    if (!settlement.isEqual(other.settlement))
-    {
-        throw std::invalid_argument("Cannot assign plans to different settlements.");
-    }
-    // Make sure facility options are the same
-    if (&facilityOptions != &other.facilityOptions)
-    {
-        throw std::invalid_argument("Cannot assign plans with different facility options.");
-    }
+// Plan &Plan::operator=(Plan &&other) {
+//     //Check for self-assignment to avoid unnecessary work and potential issues.
+//     if (this == &other) 
+//     {
+//         return *this;
+//     }
+//     // Make sure settlements are equal
+//     if (!settlement.isEqual(other.settlement))
+//     {
+//         throw std::invalid_argument("Cannot assign plans to different settlements.");
+//     }
+//     // Make sure facility options are the same
+//     if (&facilityOptions != &other.facilityOptions)
+//     {
+//         throw std::invalid_argument("Cannot assign plans with different facility options.");
+//     }
 
-    //Release any dynamically allocated memory owned by the current object (this) to prevent memory leaks.
-    clean();
+//     //Release any dynamically allocated memory owned by the current object (this) to prevent memory leaks.
+//     clean();
 
-    //Adopt the resources from the source object (other), efficiently transferring ownership.
-    plan_id = other.plan_id;
-    status = other.status;
-    life_quality_score = other.life_quality_score;
-    economy_score = other.economy_score;
-    environment_score = other.environment_score;
+//     //Adopt the resources from the source object (other), efficiently transferring ownership.
+//     plan_id = other.plan_id;
+//     status = other.status;
+//     life_quality_score = other.life_quality_score;
+//     economy_score = other.economy_score;
+//     environment_score = other.environment_score;
 
-    facilities = std::move(other.facilities);// Move vector
-    underConstruction = std::move(other.underConstruction); // Move vector
+//     facilities = std::move(other.facilities);// Move vector
+//     underConstruction = std::move(other.underConstruction); // Move vector
 
-    // Transfer ownership of selectionPolicy
-    selectionPolicy = other.selectionPolicy;
-    other.selectionPolicy = nullptr; // Nullify other’s pointer to prevent double deletion
+//     // Transfer ownership of selectionPolicy
+//     selectionPolicy = other.selectionPolicy;
+//     other.selectionPolicy = nullptr; // Nullify other’s pointer to prevent double deletion
 
-    return *this;
-}
+//     return *this;
+// }
 
 // Destructor
 Plan::~Plan() {

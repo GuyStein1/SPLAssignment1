@@ -239,8 +239,8 @@ void Simulation::addPlan(const Settlement &settlement, SelectionPolicy *selectio
     // Create a new plan with a unique ID, using the provided settlement and selection policy
     Plan newPlan(planCounter++, settlement, selectionPolicy, facilitiesOptions);
 
-    // Transfer ownership of newPlan to the plans vector to avoid unnecessary copying
-    plans.push_back(std::move(newPlan));
+    // Move the new plan into the plans vector using the move constructor
+    plans.push_back(std::move(newPlan)); // This invokes the move constructor of Plan
 }
 
 void Simulation::addAction(BaseAction *action) {
