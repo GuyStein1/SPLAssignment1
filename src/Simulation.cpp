@@ -8,7 +8,7 @@
 #include <iostream>
 
 Simulation::Simulation(const string &configFilePath)
-    : isRunning(true),    // Simulation starts as running
+    : isRunning(false),    // Simulation starts as running
       planCounter(0),     // Initialize plan counter
       actionsLog(),       // Empty action log
       plans(),            // Empty plans list
