@@ -226,15 +226,8 @@ void Plan::step() {
             FacilityType chosenType = selectionPolicy->selectFacility(facilityOptions);
 
             // Dynamically create a new Facility instance based on the selected type
-            Facility* newFacility = new Facility(
-                chosenType.getName(),
-                settlement.getName(),
-                chosenType.getCategory(),
-                chosenType.getCost(),
-                chosenType.getLifeQualityScore(),
-                chosenType.getEconomyScore(),
-                chosenType.getEnvironmentScore()
-            );
+            Facility* newFacility = new Facility(chosenType, settlement.getName());
+
             // Use addFacility method
             addFacility(newFacility);
         }
