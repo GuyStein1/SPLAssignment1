@@ -253,7 +253,6 @@ bool Simulation::addSettlement(Settlement *settlement) {
     if (isSettlementExists(settlement->getName())) {
         return false; // Settlement already exists, return false
     }
-
     // Add the new settlement to the vector
     settlements.push_back(settlement);
     return true; // Successfully added the settlement
@@ -308,4 +307,36 @@ void Simulation::step() {
         plan.step();
     }
 }
+
+void Simulation::close() {
+    // Print the summary of all plans
+    for (const auto &plan : plans) {
+        std::cout << "PlanID: " << plan.getID() << std::endl;
+        std::cout << "SettlementName: " << plan.getSettlement().getName() << std::endl; // Assuming Plan provides a way to get Settlement
+        std::cout << "LifeQualityScore: " << plan.getlifeQualityScore() << std::endl;
+        std::cout << "EconomyScore: " << plan.getEconomyScore() << std::endl;
+        std::cout << "EnvironmentScore: " << plan.getEnvironmentScore() << std::endl;
+    }
+
+    // Mark the simulation as not running
+    isRunning = false;
+
+    // Free allocated memory
+    cleanSim();
+    std::cout << "Simulation closed successfully." << std::endl;
+}
+
+void Simulation::open() {
+    // Reset all data structures
+    cleanSim();
+
+    // Reinitialize key members
+    isRunning = true;
+    planCounter = 0;
+
+    // If needed, you could re-parse a config file here or reset other members
+    std::cout << "Simulation has been reopened and reset." << std::endl;
+}
+
+
 

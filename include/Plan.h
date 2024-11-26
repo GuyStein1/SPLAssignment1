@@ -26,6 +26,9 @@ class Plan {
 
         //Getter for plan_id
         int getID() const;
+
+        //Getter for settlment
+        const Settlement& getSettlement() const;
         
         const int getlifeQualityScore() const;
         const int getEconomyScore() const;

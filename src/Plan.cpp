@@ -205,6 +205,11 @@ int Plan::getID() const {
     return plan_id;
 }
 
+// Getter for settlment
+const Settlement& Plan::getSettlement() const {
+    return settlement;
+}
+
 // Set selection policy
 void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
 {
