@@ -351,65 +351,78 @@ const string Plan::toString() const {
 
 
 //Test!!!!!!!!!!!!!!!!!!!!!!!!!!
-#include <vector>
+// #include <vector>
 
-using namespace std;
+// using namespace std;
 
-void testSelectionPolicies() {
-    // Create a settlement
-    Settlement settlement("TestCity", SettlementType::CITY); // City allows 2 facilities at a time
+// void testSelectionPolicies() {
+//     // Create a settlement
+//     Settlement settlement("TestCity", SettlementType::CITY); // City allows 2 facilities at a time
 
-    // Define facility types
-    vector<FacilityType> baseFacilityOptions = {
-        FacilityType("School", FacilityCategory::LIFE_QUALITY, 5, 10, 5, 3),
-        FacilityType("Factory", FacilityCategory::ECONOMY, 8, 2, 15, 1),
-        FacilityType("Park", FacilityCategory::ENVIRONMENT, 6, 3, 2, 10),
-        FacilityType("Office", FacilityCategory::ECONOMY, 4, 1, 12, 0)
-    };
+//     // Define independent facility types for each policy
+//     vector<FacilityType> naiveFacilities = {
+//         FacilityType("School", FacilityCategory::LIFE_QUALITY, 5, 10, 5, 3),
+//         FacilityType("Factory", FacilityCategory::ECONOMY, 8, 2, 15, 1)
+//     };
 
-    // Test different selection policies
-    vector<SelectionPolicy*> policies = {
-        new NaiveSelection(),
-        new BalancedSelection(0, 0, 0),
-        new EconomySelection(),
-        new SustainabilitySelection()
-    };
+//     vector<FacilityType> balancedFacilities = {
+//         FacilityType("School", FacilityCategory::LIFE_QUALITY, 5, 10, 5, 3),
+//         FacilityType("Park", FacilityCategory::ENVIRONMENT, 6, 3, 2, 10)
+//     };
 
-    vector<string> policyNames = {"Naive", "Balanced", "Economy", "Sustainability"};
+//     vector<FacilityType> economyFacilities = {
+//         FacilityType("Factory", FacilityCategory::ECONOMY, 8, 2, 15, 1),
+//         FacilityType("Office", FacilityCategory::ECONOMY, 4, 1, 12, 0)
+//     };
 
-    for (size_t i = 0; i < policies.size(); ++i) {
-        // Reset the facility options for each policy
-        vector<FacilityType> facilityOptions = baseFacilityOptions;
+//     vector<FacilityType> sustainabilityFacilities = {
+//         FacilityType("Park", FacilityCategory::ENVIRONMENT, 6, 3, 2, 10),
+//         FacilityType("Nature Reserve", FacilityCategory::ENVIRONMENT, 7, 5, 3, 15)
+//     };
 
-        // Create a plan for each policy
-        Plan plan(i + 1, settlement, policies[i], facilityOptions);
+//     // Define policies and their corresponding facilities
+//     vector<pair<string, pair<SelectionPolicy*, vector<FacilityType>>>> policies = {
+//         {"Naive", {new NaiveSelection(), naiveFacilities}},
+//         {"Balanced", {new BalancedSelection(0, 0, 0), balancedFacilities}},
+//         {"Economy", {new EconomySelection(), economyFacilities}},
+//         {"Sustainability", {new SustainabilitySelection(), sustainabilityFacilities}}
+//     };
 
-        cout << "\nTesting " << policyNames[i] << " Selection Policy:\n";
-        plan.printStatus();
+//     // Test each policy
+//     for (size_t i = 0; i < policies.size(); ++i) {
+//         const string& policyName = policies[i].first;
+//         SelectionPolicy* policy = policies[i].second.first;
+//         const vector<FacilityType>& facilities = policies[i].second.second;
 
-        // Simulate one step and observe facility selection
-        try {
-            plan.step();
-            plan.printStatus();
-        } catch (const exception &e) {
-            cerr << "Exception occurred during step: " << e.what() << endl;
-        }
+//         // **NEW**: Display facilities available for this policy
+//         cout << "\nFacilities Available for " << policyName << " Policy:\n";
+//         for (const auto& facility : facilities) {
+//             cout << "- " << facility.getName() 
+//                  << " (Category: " << static_cast<int>(facility.getCategory()) << ")\n";
+//         }
 
-        // Cleanup policy for this plan
-        plan.setSelectionPolicy(nullptr);
-    }
+//         // Create a plan for the policy
+//         Plan plan(i + 1, settlement, policy, facilities);
 
-    // Clean up dynamically allocated policies
-    for (auto* policy : policies) {
-        delete policy;
-    }
-}
+//         // Display initial status
+//         cout << "\nTesting " << policyName << " Selection Policy:\n";
+//         plan.printStatus();
 
-int main() {
-    try {
-        testSelectionPolicies();
-    } catch (const exception& e) {
-        cerr << "Exception occurred: " << e.what() << endl;
-    }
-    return 0;
-}
+//         // Simulate one step
+//         try {
+//             plan.step();
+//             plan.printStatus();
+//         } catch (const exception& e) {
+//             cerr << "Exception occurred during step: " << e.what() << endl;
+//         }
+//     }
+// }
+
+// int main() {
+//     try {
+//         testSelectionPolicies();
+//     } catch (const exception& e) {
+//         cerr << "Exception occurred: " << e.what() << endl;
+//     }
+//     return 0;
+// }

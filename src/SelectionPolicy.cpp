@@ -111,7 +111,7 @@ const FacilityType& SustainabilitySelection::selectFacility(const vector<Facilit
         throw std::runtime_error("No facilities available for selection.");
     }
     //Iterate over all facilities to find the first facility in the ENVIRONMENT category
-    for (size_t i = lastSelectedIndex + 1; i < facilitiesOptions.size(); ++i) {
+    for (size_t i = lastSelectedIndex + 1; i < facilitiesOptions.size(); i++) {
         if (facilitiesOptions[i].getCategory() == FacilityCategory::ENVIRONMENT) {
             lastSelectedIndex = i;
             return facilitiesOptions[i];
