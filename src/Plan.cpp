@@ -8,7 +8,7 @@
 // Constructor
 Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *selectionPolicy, const vector<FacilityType> &facilityOptions)
     : plan_id(planId),
-      settlement(&settlement),
+      settlement(settlement),
       selectionPolicy(selectionPolicy),
       facilityOptions(facilityOptions),
       status(PlanStatus::AVALIABLE),
@@ -78,7 +78,7 @@ Plan &Plan::operator=(const Plan &other) {
         return *this;
     }
     // Make sure settlements are the same
-    if (settlement != other.settlement)
+    if (!settlement.isEqual(other.settlement))
     {
         throw std::invalid_argument("Cannot assign plans to different settlements.");
     }
@@ -147,7 +147,7 @@ Plan &Plan::operator=(Plan &&other) {
         return *this;
     }
     // Make sure settlements are equal
-    if (settlement != other.settlement)
+    if (!settlement.isEqual(other.settlement))
     {
         throw std::invalid_argument("Cannot assign plans to different settlements.");
     }
@@ -213,7 +213,7 @@ void Plan::step() {
     // Stage 1: Check if the plan is available to proceed with construction
     if (status == PlanStatus::AVALIABLE) {
         // Stage 2: Ensure the number of facilities under construction meets the settlement's type limit
-        int maxConstruction = static_cast<int>(settlement->getType()) + 1; // Maximum allowed facilities under construction
+        int maxConstruction = static_cast<int>(settlement.getType()) + 1; // Maximum allowed facilities under construction
 
         while (underConstruction.size() < maxConstruction) {
             // Select a facility according to the selection policy
@@ -222,7 +222,7 @@ void Plan::step() {
             // Dynamically create a new Facility instance based on the selected type
             Facility *newFacility = new Facility(
                 chosenType.getName(),
-                settlement->getName(),
+                settlement.getName(),
                 chosenType.getCategory(),
                 chosenType.getCost(),
                 chosenType.getLifeQualityScore(),
@@ -262,7 +262,7 @@ void Plan::step() {
     }
 
     // Stage 4: Update the plan's status based on the number of facilities under construction
-    status = (underConstruction.size() >= static_cast<int>(settlement->getType()) + 1) ? 
+    status = (underConstruction.size() >= static_cast<int>(settlement.getType()) + 1) ? 
              PlanStatus::BUSY : 
              PlanStatus::AVALIABLE;
 }
@@ -287,7 +287,7 @@ void Plan::printStatus() {
 
 void Plan::addFacility(Facility* facility) {
     //Ensure the settlement has room for more facilities
-    int maxFacilities = static_cast<int>(settlement->getType()) + 1;
+    int maxFacilities = static_cast<int>(settlement.getType()) + 1;
     if (facilities.size() + underConstruction.size() >= maxFacilities) {
         throw std::runtime_error("No room for more facilities in this settlement.");
     }
@@ -316,7 +316,7 @@ const string Plan::toString() const {
     // Basic plan details
     output << "Plan ID: " << plan_id << "\n";
     output << "Status: " << (status == PlanStatus::AVALIABLE ? "Available" : "Busy") << "\n";
-    output << "Settlement: " << (settlement ? settlement->getName() : "None") << "\n";
+    output << "Settlement: " << settlement.getName() << "\n";
 
     // Facility options 
     output << "Facility Options: (" << facilityOptions.size() << " total)\n";
