@@ -2,6 +2,8 @@
 #include "SelectionPolicy.h"
 #include <climits>
 #include <algorithm> // For std::max and std::min
+#include <string>
+#include <sstream>
 
 //NaiveSelection implementation
 NaiveSelection::NaiveSelection() : lastSelectedIndex(-1) {}
@@ -11,12 +13,9 @@ const FacilityType& NaiveSelection::selectFacility(const vector<FacilityType>& f
     if (facilitiesOptions.empty()) {
         throw std::runtime_error("No facilities available for selection.");
     }
-    if (lastSelectedIndex + 1 >= facilitiesOptions.size()) {
-        throw std::runtime_error("All facilities have been selected.");
-    }
 
     // Increment index and select the next facility
-    lastSelectedIndex++;
+    lastSelectedIndex =(lastSelectedIndex + 1) % facilitiesOptions.size();
     return facilitiesOptions[lastSelectedIndex];
 }
 
@@ -63,7 +62,10 @@ const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>
 }
 
 const string BalancedSelection::toString() const {
-    return "BalancedSelection Policy";
+    return "BalancedSelection Policy: " +
+           "LifeQualityScore = " + std::to_string(LifeQualityScore) + ", " +
+           "EconomyScore = " + std::to_string(EconomyScore) + ", " +
+           "EnvironmentScore = " + std::to_string(EnvironmentScore);
 }
 
 BalancedSelection* BalancedSelection::clone() const {
@@ -83,15 +85,16 @@ const FacilityType& EconomySelection::selectFacility(const vector<FacilityType>&
     if (facilitiesOptions.empty()) {
         throw std::runtime_error("No facilities available for selection.");
     }
-    //Iterate over all facilities to find the first facility in the ECONOMY category
-    for (size_t i = lastSelectedIndex + 1; i < facilitiesOptions.size(); ++i) {
-        if (facilitiesOptions[i].getCategory() == FacilityCategory::ECONOMY) {
-            lastSelectedIndex = i;
-            return facilitiesOptions[i];
-        }
+
+    size_t i = (lastSelectedIndex + 1) % facilitiesOptions.size();
+
+    // Iterate until we find the next facility in the ECONOMY category.
+    while (facilitiesOptions[i].getCategory() != FacilityCategory::ECONOMY) {
+        i = (i + 1) % facilitiesOptions.size();
     }
 
-    throw std::runtime_error("No economy facilities available.");
+    lastSelectedIndex = i; // Update the index for the next selection.
+    return facilitiesOptions[i];
 }
 
 const string EconomySelection::toString() const {
@@ -110,15 +113,16 @@ const FacilityType& SustainabilitySelection::selectFacility(const vector<Facilit
     if (facilitiesOptions.empty()) {
         throw std::runtime_error("No facilities available for selection.");
     }
-    //Iterate over all facilities to find the first facility in the ENVIRONMENT category
-    for (size_t i = lastSelectedIndex + 1; i < facilitiesOptions.size(); i++) {
-        if (facilitiesOptions[i].getCategory() == FacilityCategory::ENVIRONMENT) {
-            lastSelectedIndex = i;
-            return facilitiesOptions[i];
-        }
+    
+    size_t i = (lastSelectedIndex + 1) % facilitiesOptions.size();
+
+    // Iterate until we find the next facility in the ENVIRONMENT category.
+    while (facilitiesOptions[i].getCategory() != FacilityCategory::ENVIRONMENT) {
+        i = (i + 1) % facilitiesOptions.size();
     }
 
-    throw std::runtime_error("No sustainability facilities available.");
+    lastSelectedIndex = i; // Update the index for the next selection.
+    return facilitiesOptions[i];
 }
 
 const string SustainabilitySelection::toString() const {
