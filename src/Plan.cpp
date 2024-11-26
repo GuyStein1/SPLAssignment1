@@ -248,7 +248,7 @@ void Plan::step() {
         }
     }
     // Stage 3: Process facilities under construction
-    for (int i = underConstruction.size() - 1; i >= 0; i--) {
+    for (int i = static_cast<int>(underConstruction.size()) - 1; i >= 0; i--) {
         Facility *facility = underConstruction[i];
 
         // Update the facility's construction progress
@@ -350,53 +350,66 @@ const string Plan::toString() const {
 
 
 
+//Test!!!!!!!!!!!!!!!!!!!!!!!!!!
+#include <vector>
 
+using namespace std;
 
-//Test!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#include <cassert>
+void testSelectionPolicies() {
+    // Create a settlement
+    Settlement settlement("TestCity", SettlementType::CITY); // City allows 2 facilities at a time
 
-void testPlanWithPolicies() {
-    // Create a Settlement
-    Settlement settlement("TestVillage", SettlementType::VILLAGE);
-
-    // Create Facility Options
-    FacilityType facility1("Park", FacilityCategory::LIFE_QUALITY, 10, 5, 3, 2);
-    FacilityType facility2("Mall", FacilityCategory::ECONOMY, 15, 2, 10, 1);
-    FacilityType facility3("Solar Plant", FacilityCategory::ENVIRONMENT, 20, 3, 4, 10);
-    FacilityType facility4("School", FacilityCategory::LIFE_QUALITY, 12, 8, 2, 1);
-    std::vector<FacilityType> facilitiesOptions = {facility1, facility2, facility3, facility4};
-
-    // Selection policies
-    std::vector<std::pair<std::string, SelectionPolicy*>> policies = {
-        {"Naive", new NaiveSelection()},
-        {"Balanced", new BalancedSelection(0, 0, 0)},
-        {"Economy", new EconomySelection()},
-        {"Sustainability", new SustainabilitySelection()}
+    // Define facility types
+    vector<FacilityType> baseFacilityOptions = {
+        FacilityType("School", FacilityCategory::LIFE_QUALITY, 5, 10, 5, 3),
+        FacilityType("Factory", FacilityCategory::ECONOMY, 8, 2, 15, 1),
+        FacilityType("Park", FacilityCategory::ENVIRONMENT, 6, 3, 2, 10),
+        FacilityType("Office", FacilityCategory::ECONOMY, 4, 1, 12, 0)
     };
 
-    // Test each selection policy
-    for (const auto& [name, policy] : policies) {
-        std::cout << "--- " << name << " Selection ---" << std::endl;
+    // Test different selection policies
+    vector<SelectionPolicy*> policies = {
+        new NaiveSelection(),
+        new BalancedSelection(0, 0, 0),
+        new EconomySelection(),
+        new SustainabilitySelection()
+    };
 
-        Plan plan(1, settlement, policy, facilitiesOptions);
-        for (int stepCount = 1; stepCount <= 4; ++stepCount) {
-            plan.step(); // Simulate steps
+    vector<string> policyNames = {"Naive", "Balanced", "Economy", "Sustainability"};
+
+    for (size_t i = 0; i < policies.size(); ++i) {
+        // Reset the facility options for each policy
+        vector<FacilityType> facilityOptions = baseFacilityOptions;
+
+        // Create a plan for each policy
+        Plan plan(i + 1, settlement, policies[i], facilityOptions);
+
+        cout << "\nTesting " << policyNames[i] << " Selection Policy:\n";
+        plan.printStatus();
+
+        // Simulate one step and observe facility selection
+        try {
+            plan.step();
+            plan.printStatus();
+        } catch (const exception &e) {
+            cerr << "Exception occurred during step: " << e.what() << endl;
         }
 
-        // Print summary
-        std::cout << "Operational Facilities: " << plan.getFacilities().size() << "\n";
-        const auto& facilities = plan.getFacilities();
-        for (const auto* facility : facilities) {
-            std::cout << "  - " << facility->getName() << "\n";
-        }
+        // Cleanup policy for this plan
+        plan.setSelectionPolicy(nullptr);
+    }
+
+    // Clean up dynamically allocated policies
+    for (auto* policy : policies) {
+        delete policy;
     }
 }
 
 int main() {
     try {
-        testPlanWithPolicies();
-    } catch (const std::exception &e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        testSelectionPolicies();
+    } catch (const exception& e) {
+        cerr << "Exception occurred: " << e.what() << endl;
     }
     return 0;
 }
