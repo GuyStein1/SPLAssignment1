@@ -61,11 +61,18 @@ const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>
     return *selectedFacility;
 }
 
-const string BalancedSelection::toString() const {
-    return "BalancedSelection Policy: " +
-           "LifeQualityScore = " + std::to_string(LifeQualityScore) + ", " +
-           "EconomyScore = " + std::to_string(EconomyScore) + ", " +
-           "EnvironmentScore = " + std::to_string(EnvironmentScore);
+const std::string BalancedSelection::toString() const {
+    // Create an output string stream for formatting the output
+    std::ostringstream oss;
+
+    // Append the policy description and member variables
+    oss << "BalancedSelection Policy: "
+        << "LifeQualityScore = " << LifeQualityScore << ", "
+        << "EconomyScore = " << EconomyScore << ", "
+        << "EnvironmentScore = " << EnvironmentScore;
+
+    // Return the formatted string
+    return oss.str();
 }
 
 BalancedSelection* BalancedSelection::clone() const {
