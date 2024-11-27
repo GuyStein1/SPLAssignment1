@@ -23,6 +23,9 @@ class Simulation {
 
         //Helper function to delete heap allocated pointers
         void cleanSim();
+        
+        // Getter for actions log
+        const vector<BaseAction*>& getActionsLog() const;
 
         void start();
         void addPlan(const Settlement &settlement, SelectionPolicy *selectionPolicy);

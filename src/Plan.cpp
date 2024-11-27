@@ -117,6 +117,8 @@ Plan::Plan(const Plan &other)
 //     return *this;
 // }
 
+
+
 // Move Constructor
 Plan::Plan(Plan &&other)
     // Transfer ownership of resources from the source object (other) to this new instance.
@@ -139,6 +141,8 @@ Plan::Plan(Plan &&other)
     other.underConstruction.clear(); // Optional: leave other in a valid empty state
     other.status = PlanStatus::AVALIABLE; // Reset status to a default state
 }
+
+
 
 // Move Assignment Operator
 // Plan &Plan::operator=(Plan &&other) {
@@ -349,6 +353,7 @@ const string Plan::toString() const {
 
     return output.str();
 }
+
 
 
 

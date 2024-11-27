@@ -232,6 +232,27 @@ void ChangePlanPolicy::act(Simulation &simulation) {
         // Validate and create the new selection policy
         SelectionPolicy *policy = createPolicy(newPolicy);
 
+        // If the policy is BalancedSelection, update its scores based on the plan's data
+        if (auto* balancedPolicy = dynamic_cast<BalancedSelection*>(policy)) {
+            // Update scores using plan's current scores
+            balancedPolicy->setLifeQualityScore(plan.getlifeQualityScore());
+            balancedPolicy->setEconomyScore(plan.getEconomyScore());
+            balancedPolicy->setEnvironmentScore(plan.getEnvironmentScore());
+
+            // Add contributions from facilities under construction
+            for (const Facility* facility : plan.getFacilitiesUnderConstruction()) {
+                balancedPolicy->setLifeQualityScore(
+                    balancedPolicy->getLifeQualityScore() + facility->getLifeQualityScore()
+                );
+                balancedPolicy->setEconomyScore(
+                    balancedPolicy->getEconomyScore() + facility->getEconomyScore()
+                );
+                balancedPolicy->setEnvironmentScore(
+                    balancedPolicy->getEnvironmentScore() + facility->getEnvironmentScore()
+                );
+            }
+        }
+
         // Check if the new policy is the same as the current policy
         if (plan.getSelectionPolicy()->toString() == newPolicy) {
             error("Cannot change selection policy");
@@ -267,4 +288,32 @@ ChangePlanPolicy* ChangePlanPolicy::clone() const {
 }
 
 // ---------- PrintActionsLog Implementation ----------
+//empty constructor
+PrintActionsLog::PrintActionsLog(){}
+
+void PrintActionsLog::act(Simulation &simulation) {
+            // Print each action in the actions log
+            for (const auto *action : simulation.getActionsLog()) {
+                std::cout << action->toString() << std::endl;
+            }
+            // Mark the action as completed
+            complete();
+
+        // Log the action in the actions log
+        simulation.addAction(this->clone());
+ }
+
+ PrintActionsLog* PrintActionsLog::clone() const {
+    return new PrintActionsLog(*this); // Deep copy using the copy constructor
+}
+
+const string PrintActionsLog::toString() const {
+        std::ostringstream oss;
+        oss << "log " 
+            << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+        return oss.str();
+    }
+
+
+
 

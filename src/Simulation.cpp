@@ -307,6 +307,11 @@ Plan &Simulation::getPlan(const int planID) {
     throw std::runtime_error("Plan doesn't exist"); // Throw an exception if not found
 }
 
+const vector<BaseAction*> &Simulation::getActionsLog() const {
+    return actionsLog;
+}
+
+
 void Simulation::step() {
     // Iterate through all plans and execute their step function
     for (auto &plan : plans) {

@@ -18,6 +18,7 @@ class SelectionPolicy {
 
 };
 
+//Helper function to convert string to policy
 SelectionPolicy* createPolicy(const std::string &policyName);
 
 class NaiveSelection: public SelectionPolicy {
@@ -43,7 +44,7 @@ class BalancedSelection: public SelectionPolicy {
         void setLifeQualityScore(int score);
         void setEconomyScore(int score);
         void setEnvironmentScore(int score);
-
+        
     private:
         int LifeQualityScore;
         int EconomyScore;
