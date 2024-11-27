@@ -129,8 +129,95 @@ const string AddSettlement::toString() const {
     return oss.str();
 }
 
-AddPlan *AddPlan::clone() const {
-    return new AddPlan(*this);
+AddSettlement *AddSettlement::clone() const {
+    return new AddSettlement(*this);
 }
 
 // ---------- AddFacility Implementation ----------
+AddFacility::AddFacility(const string &facilityName,
+                         const FacilityCategory facilityCategory,
+                         const int price,
+                         const int lifeQualityScore,
+                         const int economyScore,
+                         const int environmentScore)
+    : facilityName(facilityName),
+      facilityCategory(facilityCategory),
+      price(price),
+      lifeQualityScore(lifeQualityScore),
+      economyScore(economyScore),
+      environmentScore(environmentScore) {}
+
+void AddFacility::act(Simulation &simulation) {
+
+    // Create a new FacilityType object
+    FacilityType facility(facilityName, facilityCategory, price, lifeQualityScore, economyScore, environmentScore);
+
+    // Add the facility to the simulation
+    if (!simulation.addFacility(facility)) {
+        // If the settlement already exists, clean up and throw an error
+        error("Facility already exists");
+        // Log a snapshot of the action
+        simulation.addAction(this->clone());
+        return;
+    }
+
+    // Mark the action as completed
+    complete();
+
+    // Log a snapshot of the action
+    simulation.addAction(this->clone());
+}
+
+const string AddFacility::toString() const {
+    std::ostringstream oss;
+    oss << "facility " 
+        << facilityName << " "
+        << static_cast<int>(facilityCategory) << " "
+        << price << " " 
+        << lifeQualityScore << " "
+        << economyScore << " "
+        << environmentScore << " "
+        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR"); 
+    return oss.str();
+}
+
+AddFacility *AddFacility::clone() const {
+    return new AddFacility(*this);
+}
+
+
+// ---------- PrintPlanStatus Implementation ----------
+PrintPlanStatus::PrintPlanStatus(int planId) : planId(planId) {}
+
+void PrintPlanStatus::act(Simulation &simulation) {
+    try {
+        // Retrieve the plan using the plan ID
+        Plan &plan = simulation.getPlan(planId);
+
+        // Delegate the printing to the Plan class's printStatus method
+        plan.printStatus();
+
+        // Mark the action as completed
+        complete();
+    } catch (const std::exception &e) {
+        // Handle a case where plan not found
+        error(e.what());
+    }
+
+    // Log a snapshot of the action
+    simulation.addAction(this->clone());
+}
+
+const string PrintPlanStatus::toString() const {
+    std::ostringstream oss;
+    oss << "plan_status " 
+        << planId << " " 
+        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return oss.str();
+}
+
+PrintPlanStatus* PrintPlanStatus::clone() const {
+    return new PrintPlanStatus(*this); 
+}
+
+// ---------- ChangePlanPolicy Implementation ----------

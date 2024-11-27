@@ -263,20 +263,33 @@ void Plan::step() {
 }
 
 void Plan::printStatus() {
-    // Print the basic status of the plan
-    std::cout << "Plan ID: " << plan_id << "\n";
-    std::cout << "Status: " << (status == PlanStatus::AVALIABLE ? "Available" : "Busy") << "\n";
+    // Print the plan ID
+    std::cout << "PlanID: " << plan_id << "\n";
 
-    // Print details of operational facilities
-    std::cout << "Operational Facilities (" << facilities.size() << "):\n";
-    for (const Facility* facility : facilities) {
-        std::cout << "- " << facility->toString() << "\n";
+    // Print the settlement name
+    std::cout << "SettlementName: " << settlement.getName() << "\n";
+
+    // Print the plan status
+    std::cout << "PlanStatus: " << (status == PlanStatus::AVALIABLE ? "AVALIABLE" : "BUSY") << "\n";
+
+    // Print the selection policy
+    if (selectionPolicy) {
+        std::cout << "SelectionPolicy: " << selectionPolicy->toString() << "\n";
+    } else {
+        std::cout << "SelectionPolicy: None\n";
     }
 
-    // Print details of facilities under construction
-    std::cout << "Facilities Under Construction (" << underConstruction.size() << "):\n";
-    for (const Facility* facility : underConstruction) {
-        std::cout << "- " << facility->toString() << "\n";
+    // Print the scores
+    std::cout << "LifeQualityScore: " << life_quality_score << "\n";
+    std::cout << "EconomyScore: " << economy_score << "\n";
+    std::cout << "EnvironmentScore: " << environment_score << "\n";
+
+    // Print each facility's details
+    for (const Facility* facility : facilities) {
+        std::cout << "FacilityName: " << facility->getName() << "\n";
+        std::cout << "FacilityStatus: " 
+                  << (facility->getStatus() == FacilityStatus::OPERATIONAL ? "OPERATIONAL" : "UNDER_CONSTRUCTION") 
+                  << "\n";
     }
 }
 

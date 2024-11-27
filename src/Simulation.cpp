@@ -304,7 +304,7 @@ Plan &Simulation::getPlan(const int planID) {
         }
     }
 
-    throw std::runtime_error("Plan not found with ID: " + std::to_string(planID)); // Throw an exception if not found
+    throw std::runtime_error("Plan doesn't exist"); // Throw an exception if not found
 }
 
 void Simulation::step() {
