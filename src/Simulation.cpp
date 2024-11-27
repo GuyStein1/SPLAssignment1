@@ -93,7 +93,7 @@ Simulation::Simulation(const string &configFilePath)
             }
 
             // Create the plan and associate it with the settlement
-            Plan plan(planCounter++, *p, policy, facilitiesOptions); // Assumes Plan has this constructor
+            Plan plan(planCounter++, *p, policy, facilitiesOptions); 
             plans.push_back(plan);
         }
         else

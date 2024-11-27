@@ -61,6 +61,19 @@ const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>
     return *selectedFacility;
 }
 
+// Getter methods to retrieve scores
+int BalancedSelection::getLifeQualityScore() const {
+    return LifeQualityScore;
+}
+
+int BalancedSelection::getEconomyScore() const {
+    return EconomyScore;
+}
+
+int BalancedSelection::getEnvironmentScore() const {
+    return EnvironmentScore;
+}
+
 const std::string BalancedSelection::toString() const {
     return "bal";
 }
@@ -135,7 +148,7 @@ SelectionPolicy* createPolicy(const std::string &policyName) {
     if (policyName == "nve") {
         return new NaiveSelection();
     } else if (policyName == "bal") {
-        return new BalancedSelection(0, 0, 0); 
+        return new BalancedSelection(0, 0, 0); // Generic initialization to 0's.
     } else if (policyName == "eco") {
         return new EconomySelection();
     } else if (policyName == "env") {

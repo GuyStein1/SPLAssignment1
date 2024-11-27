@@ -219,6 +219,11 @@ const SelectionPolicy* Plan::getSelectionPolicy() const {
     return selectionPolicy;
 }
 
+// Getter for underConstruction vector
+const vector<Facility*>& Plan::getFacilitiesUnderConstruction() const {
+    return underConstruction;
+}
+
 // Set selection policy
 void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
 {

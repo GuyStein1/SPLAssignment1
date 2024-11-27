@@ -220,6 +220,7 @@ PrintPlanStatus* PrintPlanStatus::clone() const {
     return new PrintPlanStatus(*this); 
 }
 
+
 // ---------- ChangePlanPolicy Implementation ----------
 ChangePlanPolicy::ChangePlanPolicy(const int planId, const string &newPolicy) 
     : planId(planId), newPolicy(newPolicy) {}
@@ -231,6 +232,13 @@ void ChangePlanPolicy::act(Simulation &simulation) {
 
         // Validate and create the new selection policy
         SelectionPolicy *policy = createPolicy(newPolicy);
+
+        // Check if the new policy is the same as the current policy
+        if (plan.getSelectionPolicy()->toString() == newPolicy) {
+            error("Cannot change selection policy");
+            simulation.addAction(this->clone());
+            return;
+        }
 
         // If the policy is BalancedSelection, update its scores based on the plan's data
         if (auto* balancedPolicy = dynamic_cast<BalancedSelection*>(policy)) {
@@ -251,13 +259,6 @@ void ChangePlanPolicy::act(Simulation &simulation) {
                     balancedPolicy->getEnvironmentScore() + facility->getEnvironmentScore()
                 );
             }
-        }
-
-        // Check if the new policy is the same as the current policy
-        if (plan.getSelectionPolicy()->toString() == newPolicy) {
-            error("Cannot change selection policy");
-            simulation.addAction(this->clone());
-            return;
         }
 
         // Set the new selection policy in the plan

@@ -32,6 +32,9 @@ class Plan {
 
         //Getter for selection policy
         const SelectionPolicy* getSelectionPolicy() const;
+
+        //Getter for underConstruction
+        const vector<Facility*>& getFacilitiesUnderConstruction() const;
         
         const int getlifeQualityScore() const;
         const int getEconomyScore() const;

@@ -44,7 +44,12 @@ class BalancedSelection: public SelectionPolicy {
         void setLifeQualityScore(int score);
         void setEconomyScore(int score);
         void setEnvironmentScore(int score);
-        
+
+        // Getter methods to retrieve scores
+        int getLifeQualityScore() const;
+        int getEconomyScore() const;
+        int getEnvironmentScore() const;
+
     private:
         int LifeQualityScore;
         int EconomyScore;
