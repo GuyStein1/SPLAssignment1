@@ -60,9 +60,14 @@ SimulateStep *SimulateStep::clone() const {
 AddPlan::AddPlan(const string &settlementName, const string &selectionPolicy)
     : settlementName(settlementName), selectionPolicy(selectionPolicy) {}
 
+// Helper function to make sure policy is valid
+bool AddPlan::isValidPolicy(const string &policyName) {
+    return (policyName == "nve" || policyName == "bal" || policyName == "eco" || policyName == "env");
+}
+
 void AddPlan::act(Simulation &simulation) {
     // Make sure settlement name exists in the simulation and the selection policy string is valid
-    if (!simulation.isSettlementExists(settlementName) || !isValidPolicy) {
+    if (!simulation.isSettlementExists(settlementName) || !isValidPolicy(selectionPolicy)) {
         error("Cannot create this plan");
         // Log a snapshot of the action 
         simulation.addAction(this->clone());
@@ -288,21 +293,23 @@ ChangePlanPolicy* ChangePlanPolicy::clone() const {
     return new ChangePlanPolicy(*this); 
 }
 
+
 // ---------- PrintActionsLog Implementation ----------
-//empty constructor
-PrintActionsLog::PrintActionsLog(){}
+
+// Empty constructor
+PrintActionsLog::PrintActionsLog() = default;
 
 void PrintActionsLog::act(Simulation &simulation) {
-            // Print each action in the actions log
-            for (const auto *action : simulation.getActionsLog()) {
-                std::cout << action->toString() << std::endl;
-            }
-            // Mark the action as completed
-            complete();
+    // Print each action in the actions log
+    for (const auto *action : simulation.getActionsLog()) {
+        std::cout << action->toString() << std::endl;
+    }
+    // Mark the action as completed
+    complete();
 
-        // Log the action in the actions log
-        simulation.addAction(this->clone());
- }
+    // Log the action in the actions log
+    simulation.addAction(this->clone());
+}
 
  PrintActionsLog* PrintActionsLog::clone() const {
     return new PrintActionsLog(*this); // Deep copy using the copy constructor
@@ -315,6 +322,99 @@ const string PrintActionsLog::toString() const {
         return oss.str();
     }
 
+// ---------- Close Implementation ----------
+
+Close::Close() = default;
+
+
+void Close::act(Simulation &simulation) {
+    // Call the simulation's close method to handle cleanup and closure
+    simulation.close();
+
+    // Mark the action as completed
+    complete();
+
+    // Log the action in the actions log
+    simulation.addAction(this->clone());
+}
+
+Close* Close::clone() const {
+    return new Close(*this);
+}
+
+const std::string Close::toString() const {
+    std::ostringstream oss;
+    oss << "close "
+        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return oss.str();
+}
+
+// ---------- BackupSimulation Implementation ----------
+
+// Declare the global backup variable
+extern Simulation* backup;
+
+BackupSimulation::BackupSimulation() = default;
+
+void BackupSimulation::act(Simulation &simulation) {
+    // Delete any existing backup
+    if (backup != nullptr) {
+        delete backup;
+        backup = nullptr;
+    }
+
+    // Create a new backup as a deep copy of the current simulation
+    backup = new Simulation(simulation);
+
+    // Mark the action as completed
+    complete();
+
+    // Log the action in the actions log
+    simulation.addAction(this->clone());
+}
+
+BackupSimulation* BackupSimulation::clone() const {
+    return new BackupSimulation(*this);
+}
+
+const std::string BackupSimulation::toString() const {
+    std::ostringstream oss;
+    oss << "backup "
+        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return oss.str();
+}
 
 
 
+// ---------- RestoreSimulation Implementation ----------
+
+RestoreSimulation::RestoreSimulation() = default;
+
+void RestoreSimulation::act(Simulation &simulation) {
+    // Check if a backup exists
+    if (backup == nullptr) {
+        error("No backup available");
+        simulation.addAction(this->clone());
+        return;
+    }
+
+    // Overwrite the current simulation with the backup
+    simulation = *backup;
+
+    // Mark the action as completed
+    complete();
+
+    // Log the action in the actions log
+    simulation.addAction(this->clone());
+}
+
+RestoreSimulation* RestoreSimulation::clone() const {
+    return new RestoreSimulation(*this);
+}
+
+const std::string RestoreSimulation::toString() const {
+    std::ostringstream oss;
+    oss << "restore "
+        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return oss.str();
+}

@@ -47,9 +47,7 @@ class AddPlan : public BaseAction {
         AddPlan *clone() const override;
 
         // Helper function to make sure policy is valid
-        bool isValidPolicy(const string &policyName) {
-            return (policyName == "nve" || policyName == "bal" || policyName == "eco" || policyName == "env");
-        }
+        bool isValidPolicy(const string &policyName);
 
     private:
         const string settlementName;
