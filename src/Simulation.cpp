@@ -144,6 +144,12 @@ void Simulation::cleanSim() {
         delete settlement; 
     }
     settlements.clear(); //Remove all elements from the vector, avoiding dangling pointers to freed memory
+
+    // Clear plans by invoking the destructor for each Plan object
+    plans.clear(); // Plans are not dynamically allocated, so no need for manual deletion
+
+    // Clear facilitiesOptions
+    facilitiesOptions.clear(); // FacilityType does not involve dynamic memory, so shallow clear is sufficient
 }
 
 
@@ -323,19 +329,18 @@ void Simulation::close() {
 
     // Free allocated memory
     cleanSim();
+
+    // Reset planCounter
+    planCounter = 0;
+
+
     std::cout << "Simulation closed successfully." << std::endl;
 }
 
 void Simulation::open() {
-    // Reset all data structures
-    cleanSim();
-
     // Reinitialize key members
     isRunning = true;
-    planCounter = 0;
-
-    // If needed, you could re-parse a config file here or reset other members
-    std::cout << "Simulation has been reopened and reset." << std::endl;
+    std::cout << "Simulation has been reopened." << std::endl;
 }
 
 
