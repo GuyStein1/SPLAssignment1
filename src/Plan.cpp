@@ -210,6 +210,11 @@ const Settlement& Plan::getSettlement() const {
     return settlement;
 }
 
+// Getter for selection policy
+const SelectionPolicy* Plan::getSelectionPolicy() const {
+    return selectionPolicy;
+}
+
 // Set selection policy
 void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
 {

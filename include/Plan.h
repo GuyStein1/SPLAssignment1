@@ -29,6 +29,9 @@ class Plan {
 
         //Getter for settlment
         const Settlement& getSettlement() const;
+
+        //Getter for selection policy
+        const SelectionPolicy* getSelectionPolicy() const;
         
         const int getlifeQualityScore() const;
         const int getEconomyScore() const;

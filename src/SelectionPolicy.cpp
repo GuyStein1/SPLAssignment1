@@ -20,7 +20,7 @@ const FacilityType& NaiveSelection::selectFacility(const vector<FacilityType>& f
 }
 
 const string NaiveSelection::toString() const {
-    return "NaiveSelection Policy";
+    return "nve";
 }
 
 NaiveSelection* NaiveSelection::clone() const {
@@ -62,17 +62,7 @@ const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>
 }
 
 const std::string BalancedSelection::toString() const {
-    // Create an output string stream for formatting the output
-    std::ostringstream oss;
-
-    // Append the policy description and member variables
-    oss << "BalancedSelection Policy: "
-        << "LifeQualityScore = " << LifeQualityScore << ", "
-        << "EconomyScore = " << EconomyScore << ", "
-        << "EnvironmentScore = " << EnvironmentScore;
-
-    // Return the formatted string
-    return oss.str();
+    return "bal";
 }
 
 BalancedSelection* BalancedSelection::clone() const {
@@ -105,7 +95,7 @@ const FacilityType& EconomySelection::selectFacility(const vector<FacilityType>&
 }
 
 const string EconomySelection::toString() const {
-    return "EconomySelection Policy";
+    return "eco";
 }
 
 EconomySelection* EconomySelection::clone() const {
@@ -133,7 +123,7 @@ const FacilityType& SustainabilitySelection::selectFacility(const vector<Facilit
 }
 
 const string SustainabilitySelection::toString() const {
-    return "SustainabilitySelection Policy";
+    return "env";
 }
 
 SustainabilitySelection* SustainabilitySelection::clone() const {

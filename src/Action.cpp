@@ -210,7 +210,7 @@ void PrintPlanStatus::act(Simulation &simulation) {
 
 const string PrintPlanStatus::toString() const {
     std::ostringstream oss;
-    oss << "plan_status " 
+    oss << "planStatus " 
         << planId << " " 
         << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
     return oss.str();
@@ -221,3 +221,50 @@ PrintPlanStatus* PrintPlanStatus::clone() const {
 }
 
 // ---------- ChangePlanPolicy Implementation ----------
+ChangePlanPolicy::ChangePlanPolicy(const int planId, const string &newPolicy) 
+    : planId(planId), newPolicy(newPolicy) {}
+
+void ChangePlanPolicy::act(Simulation &simulation) {
+    try {
+        // Retrieve the plan using the plan ID
+        Plan &plan = simulation.getPlan(planId);
+
+        // Validate and create the new selection policy
+        SelectionPolicy *policy = createPolicy(newPolicy);
+
+        // Check if the new policy is the same as the current policy
+        if (plan.getSelectionPolicy()->toString() == newPolicy) {
+            error("Cannot change selection policy");
+            simulation.addAction(this->clone());
+            return;
+        }
+
+        // Set the new selection policy in the plan
+        plan.setSelectionPolicy(policy);
+
+        // Mark the action as completed
+        complete();
+    } catch (const std::exception &e) {
+        // Exception will occur if plan id isnt found in getPlan
+        error("Cannot change selection policy");
+    }
+
+    // Log a snapshot of the action
+    simulation.addAction(this->clone());
+}
+
+const string ChangePlanPolicy::toString() const {
+    std::ostringstream oss;
+    oss << "changePolicy " 
+        << planId << " " 
+        << newPolicy << " " 
+        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return oss.str();
+}
+
+ChangePlanPolicy* ChangePlanPolicy::clone() const {
+    return new ChangePlanPolicy(*this); 
+}
+
+// ---------- PrintActionsLog Implementation ----------
+
