@@ -112,7 +112,7 @@ Simulation::Simulation(const Simulation &other)
       actionsLog(),
       plans(),
       settlements(),
-      facilitiesOptions(other.facilitiesOptions) // Shallow copy of facilityOptions (sufficient since FacilityType has no dynamic resources)
+      facilitiesOptions() 
 {
     // Deep copy other vectors
     for (BaseAction* action : other.actionsLog)
@@ -126,6 +126,10 @@ Simulation::Simulation(const Simulation &other)
     for (Settlement* settlement : other.settlements)
     {
         settlements.push_back(new Settlement(*settlement));
+    }
+    for (FacilityType facility : other.facilitiesOptions)
+    {
+        facilitiesOptions.push_back(FacilityType(facility));
     }
 }
 
@@ -168,8 +172,6 @@ Simulation &Simulation::operator=(const Simulation &other) {
     isRunning = other.isRunning;
     planCounter = other.planCounter;
 
-    facilitiesOptions = other.facilitiesOptions; // Shallow copy (sufficient for FacilityType)
-
     // Deep copy dynamically allocated members
     for (BaseAction* action : other.actionsLog)
     {
@@ -182,6 +184,10 @@ Simulation &Simulation::operator=(const Simulation &other) {
     for (Settlement* settlement : other.settlements)
     {
         settlements.push_back(new Settlement(*settlement));
+    }
+    for (FacilityType facility : other.facilitiesOptions)
+    {
+        facilitiesOptions.push_back(FacilityType(facility));
     }
 
     return *this;

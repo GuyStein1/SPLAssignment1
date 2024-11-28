@@ -46,7 +46,8 @@ const string SimulateStep::toString() const {
     std::ostringstream oss;
     oss << "step " 
         << numOfSteps << " " 
-        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+         // This action never results in an error so always completed
+        << "COMPLETED";
     return oss.str();
 }
 
@@ -254,15 +255,9 @@ void ChangePlanPolicy::act(Simulation &simulation) {
 
             // Add contributions from facilities under construction
             for (const Facility* facility : plan.getFacilitiesUnderConstruction()) {
-                balancedPolicy->setLifeQualityScore(
-                    balancedPolicy->getLifeQualityScore() + facility->getLifeQualityScore()
-                );
-                balancedPolicy->setEconomyScore(
-                    balancedPolicy->getEconomyScore() + facility->getEconomyScore()
-                );
-                balancedPolicy->setEnvironmentScore(
-                    balancedPolicy->getEnvironmentScore() + facility->getEnvironmentScore()
-                );
+                balancedPolicy->setLifeQualityScore(balancedPolicy->getLifeQualityScore() + facility->getLifeQualityScore());
+                balancedPolicy->setEconomyScore(balancedPolicy->getEconomyScore() + facility->getEconomyScore());
+                balancedPolicy->setEnvironmentScore(balancedPolicy->getEnvironmentScore() + facility->getEnvironmentScore());
             }
         }
 
@@ -316,11 +311,9 @@ void PrintActionsLog::act(Simulation &simulation) {
 }
 
 const string PrintActionsLog::toString() const {
-        std::ostringstream oss;
-        oss << "log " 
-            << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
-        return oss.str();
-    }
+    // This action never results in an error so always completed
+    return "log COMPLETED";
+ }
 
 // ---------- Close Implementation ----------
 
@@ -343,10 +336,8 @@ Close* Close::clone() const {
 }
 
 const std::string Close::toString() const {
-    std::ostringstream oss;
-    oss << "close "
-        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
-    return oss.str();
+     // This action never results in an error so always completed
+    return "close COMPLETED";
 }
 
 // ---------- BackupSimulation Implementation ----------
@@ -378,10 +369,8 @@ BackupSimulation* BackupSimulation::clone() const {
 }
 
 const std::string BackupSimulation::toString() const {
-    std::ostringstream oss;
-    oss << "backup "
-        << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
-    return oss.str();
+    // This action never results in an error so always completed
+    return "backup COMPLETED";
 }
 
 
@@ -399,6 +388,7 @@ void RestoreSimulation::act(Simulation &simulation) {
     }
 
     // Overwrite the current simulation with the backup
+    // Use copy assingment operator
     simulation = *backup;
 
     // Mark the action as completed
