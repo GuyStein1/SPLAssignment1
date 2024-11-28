@@ -45,21 +45,17 @@ void Plan::clean() {
 // Copy Constructor
 Plan::Plan(const Plan &other)
     // Create a new object as a copy of an existing object
-    : plan_id(other.plan_id), 
+    : plan_id(other.plan_id),
+      settlement(*new Settlement(other.settlement)),
+      selectionPolicy(other.selectionPolicy->clone()),
       status(other.status),
       facilityOptions(other.facilityOptions),
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
       environment_score(other.environment_score),
       facilities(),
-      underConstruction(),
-      // Deep copy of selection policy, using clone():
-      // The clone() method is implemented in each derived class of SelectionPolicy to create a new instance of the same class and return a pointer to it.
-      // This ensures the correct derived type is duplicated, preserving polymorphism and copying all unique attributes of the specific SelectionPolicy.
-      // It is an elegant solution for copying polymorphic objects safely and correctly.
-      selectionPolicy(other.selectionPolicy->clone())
-{
-    settlement = new settlement(&other.settlement.getName(),other.settlement.getType());
+      underConstruction() {
+
     // Deep copy facilities and underConstruction.
     for (Facility *facility : other.facilities)
     {
@@ -124,7 +120,7 @@ Plan::Plan(const Plan &other)
 Plan::Plan(Plan &&other)
     // Transfer ownership of resources from the source object (other) to this new instance.
     : plan_id(other.plan_id),
-      settlement(other.settlement), //Transfer the pointer
+      settlement(std::move(other.settlement)), //Transfer the pointer
       selectionPolicy(other.selectionPolicy), // Transfer ownership
       status(other.status),
       facilityOptions(other.facilityOptions), // Reference, no need to reassign
@@ -185,6 +181,7 @@ Plan::Plan(Plan &&other)
 
 // Destructor
 Plan::~Plan() {
+    delete &settlement;
     clean();
 }
 
