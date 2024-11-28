@@ -27,6 +27,9 @@ void Plan::clean() {
     delete selectionPolicy;
     selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
 
+    // Delete dynamically allocated Settlement (allocated in the copy constructor)
+    delete &settlement;
+
     // Free dynamically allocated memory
     for (Facility *facility : facilities)
     {
