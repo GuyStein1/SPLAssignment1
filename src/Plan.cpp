@@ -297,7 +297,7 @@ void Plan::printStatus() {
     std::cout << "LifeQualityScore: " << life_quality_score << "\n";
     std::cout << "EconomyScore: " << economy_score << "\n";
     std::cout << "EnvironmentScore: " << environment_score << "\n";
-    
+
     // Print facilities under construction
     for (const Facility* facility : underConstruction) {
         std::cout << "FacilityName: " << facility->getName() << "\n";

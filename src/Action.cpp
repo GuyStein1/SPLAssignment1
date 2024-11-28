@@ -3,6 +3,10 @@
 #include <iostream>
 #include <sstream>
 
+// Declare the global backup variable
+extern Simulation* backup;
+
+
 // ---------- BaseAction Implementation ----------
 BaseAction::BaseAction() : status(ActionStatus::COMPLETED), errorMsg("") {}
 
@@ -341,9 +345,6 @@ const std::string Close::toString() const {
 }
 
 // ---------- BackupSimulation Implementation ----------
-
-// Declare the global backup variable
-extern Simulation* backup;
 
 BackupSimulation::BackupSimulation() = default;
 
