@@ -190,6 +190,8 @@ Simulation &Simulation::operator=(const Simulation &other) {
         facilitiesOptions.push_back(FacilityType(facility));
     }
 
+    
+
     return *this;
 }
 
