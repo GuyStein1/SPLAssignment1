@@ -1,4 +1,5 @@
 #include "Plan.h"
+#include "Settlement.h"
 #include <iostream>
 #include <stdexcept>
 #include <algorithm> // For std::find
@@ -44,8 +45,7 @@ void Plan::clean() {
 // Copy Constructor
 Plan::Plan(const Plan &other)
     // Create a new object as a copy of an existing object
-    : plan_id(other.plan_id),
-      settlement(other.settlement), 
+    : plan_id(other.plan_id), 
       status(other.status),
       facilityOptions(other.facilityOptions),
       life_quality_score(other.life_quality_score),
@@ -59,6 +59,7 @@ Plan::Plan(const Plan &other)
       // It is an elegant solution for copying polymorphic objects safely and correctly.
       selectionPolicy(other.selectionPolicy->clone())
 {
+    settlement = new settlement(&other.settlement.getName(),other.settlement.getType());
     // Deep copy facilities and underConstruction.
     for (Facility *facility : other.facilities)
     {
