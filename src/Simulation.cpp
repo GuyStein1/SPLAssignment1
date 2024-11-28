@@ -245,6 +245,8 @@ void Simulation::start() {
     // Log the start of the simulation
     std::cout << "The simulation has started" << std::endl;
     isRunning = true; // Set the simulation state to running
+
+    runCommandLoop();
 }
 
 void Simulation::addPlan(const Settlement &settlement, SelectionPolicy *selectionPolicy) {
@@ -352,6 +354,110 @@ void Simulation::open() {
     // Reinitialize key members
     isRunning = true;
     std::cout << "Simulation has been reopened." << std::endl;
+
+    // Run the command loop to accept new actions
+    runCommandLoop();
+}
+
+
+// ---------- User Interface Implementation ----------
+
+void Simulation::runCommandLoop() {
+    while (true) { // Infinite loop to allow reopening
+        if (!isRunning) {
+            std::cout << "Simulation is closed. Type 'open' to restart or 'exit' to quit." << std::endl;
+        }
+
+        std::cout << "> "; // Prompt the user
+        std::string input;
+        std::getline(std::cin, input);
+
+        std::istringstream iss(input);
+        std::string command;
+        iss >> command;
+
+        try {
+            if (command == "step") {
+                int numOfSteps;
+                iss >> numOfSteps;
+                if (iss.fail() || numOfSteps <= 0) {
+                    throw std::runtime_error("Invalid input for step");
+                }
+                SimulateStep action(numOfSteps);
+                action.act(*this);
+            } else if (command == "plan") {
+                std::string settlementName, selectionPolicy;
+                iss >> settlementName >> selectionPolicy;
+                if (settlementName.empty() || selectionPolicy.empty()) {
+                    throw std::runtime_error("Invalid input for plan");
+                }
+                AddPlan action(settlementName, selectionPolicy);
+                action.act(*this);
+            } else if (command == "settlement") {
+                std::string settlementName;
+                int settlementTypeInt;
+                iss >> settlementName >> settlementTypeInt;
+                if (settlementName.empty() || iss.fail() || settlementTypeInt < 0 || settlementTypeInt > 2) {
+                    throw std::runtime_error("Invalid input for settlement");
+                }
+                SettlementType settlementType = static_cast<SettlementType>(settlementTypeInt);
+                AddSettlement action(settlementName, settlementType);
+                action.act(*this);
+            } else if (command == "facility") {
+                std::string facilityName;
+                int category, price, lifeQ, economy, environment;
+                iss >> facilityName >> category >> price >> lifeQ >> economy >> environment;
+                if (facilityName.empty() || iss.fail() || category < 0 || category > 2 || price < 0 || lifeQ < 0 || economy < 0 || environment < 0) {
+                    throw std::runtime_error("Invalid input for facility");
+                }
+                FacilityCategory facilityCategory = static_cast<FacilityCategory>(category);
+                AddFacility action(facilityName, facilityCategory, price, lifeQ, economy, environment);
+                action.act(*this);
+            } else if (command == "planStatus") {
+                int planId;
+                iss >> planId;
+                if (iss.fail()) {
+                    throw std::runtime_error("Invalid input for planStatus");
+                }
+                PrintPlanStatus action(planId);
+                action.act(*this);
+            } else if (command == "changePolicy") {
+                int planId;
+                std::string newPolicy;
+                iss >> planId >> newPolicy;
+                if (iss.fail() || newPolicy.empty()) {
+                    throw std::runtime_error("Invalid input for changePolicy");
+                }
+                ChangePlanPolicy action(planId, newPolicy);
+                action.act(*this);
+            } else if (command == "log") {
+                PrintActionsLog action;
+                action.act(*this);
+            } else if (command == "backup") {
+                BackupSimulation action;
+                action.act(*this);
+            } else if (command == "restore") {
+                RestoreSimulation action;
+                action.act(*this);
+            } else if (command == "close") {
+                Close action;
+                action.act(*this);
+                isRunning = false; // Mark the simulation as closed
+            } else if (command == "open") {
+                if (!isRunning) {
+                    open();
+                } else {
+                    std::cout << "Simulation is already running." << std::endl;
+                }
+            } else if (command == "exit") {
+                break; // Exit the loop and terminate the program
+            } else {
+                throw std::runtime_error("Unknown command");
+            }
+        } catch (const std::exception &e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    }
 }
 
 

@@ -394,6 +394,10 @@ void RestoreSimulation::act(Simulation &simulation) {
     // Mark the action as completed
     complete();
 
+    // Call simulation.open() to ensure the simulation is marked as running
+    // and to print the "Simulation has been reopened" message
+    simulation.open();
+
     // Log the action in the actions log
     simulation.addAction(this->clone());
 }
@@ -408,3 +412,5 @@ const std::string RestoreSimulation::toString() const {
         << (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
     return oss.str();
 }
+
+

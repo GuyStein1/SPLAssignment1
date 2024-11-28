@@ -27,6 +27,9 @@ class Simulation {
         // Getter for actions log
         const vector<BaseAction*>& getActionsLog() const;
 
+        // User interface
+        void runCommandLoop();
+
         void start();
         void addPlan(const Settlement &settlement, SelectionPolicy *selectionPolicy);
         void addAction(BaseAction *action);
