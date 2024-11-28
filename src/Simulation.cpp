@@ -135,88 +135,71 @@ Simulation::Simulation(const Simulation &other)
     }
 }
 
-// Helper function to delete all heap allocated pointers
-void Simulation::cleanSim() {
-    // Clear plans (no dynamic allocation in Plan, so just clear the vector)
-    plans.clear();
-
-    // Free dynamically allocated actions
-    for (BaseAction* action : actionsLog) {
-        delete action;
-    }
-    actionsLog.clear();
-
-    // Free dynamically allocated settlements
-    for (Settlement* settlement : settlements) {
-        delete settlement; // Properly delete settlements
-    }
-    settlements.clear();
-
-    // Clear facilities (no dynamic memory)
-    facilitiesOptions.clear();
-}
-
-
-//Copy Assignment Operator
+// Copy Assignment Operator
 Simulation &Simulation::operator=(const Simulation &other) {
-    //Check for self-assignment to avoid unnecessary work and potential issues.
-    if (this == &other)
-    {
+    // Check for self-assignment to avoid unnecessary work and potential issues.
+    if (this == &other) {
         return *this;
     }
 
-    // Clear plans (no dynamic allocation in Plan, so just clear the vector)
+    // Clear plans (no dynamic allocation in Plan, so just clear the vector).
     plans.clear();
 
-    // Free dynamically allocated actions
+    // Free dynamically allocated actions and clear the actions log.
     for (BaseAction* action : actionsLog) {
         delete action;
     }
     actionsLog.clear();
 
-    // Temporary vector to hold settlements to retain
+    // Clear the facilitiesOptions vector (shallow clear as FacilityType doesn't use dynamic memory).
+    facilitiesOptions.clear();
+
+    // Delete settlements in `this->settlements` that do not exist in `other.settlements`.
+    // Temporary vector to hold settlements that will be retained.
     vector<Settlement*> retainedSettlements;
 
-    // We want to delete all heap allocated settlements that aren't in use anymore.
+    // Iterate through settlements in `this->settlements`.
     for (Settlement* settlement : settlements) {
-        // Check if the settlement exists in `other.settlements`
-        auto it = std::find_if(
-            other.settlements.begin(),
-            other.settlements.end(),
-            [&settlement](Settlement* s) { return s->getName() == settlement->getName(); }
-        );
+        bool found = false;
 
-        if (it != other.settlements.end()) {
-            // Settlement exists in `other`, retain it
+        // Check if the settlement exists in `other.settlements`.
+        for (Settlement* otherSettlement : other.settlements) {
+            if (otherSettlement->getName() == settlement->getName()) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) {
+            // Retain the settlement if it exists in `other.settlements`.
             retainedSettlements.push_back(settlement);
         } else {
-            // Settlement does not exist in `other`, delete it
+            // If the settlement exists only in `this`:
+            // - It is not used in the new state represented by `other`.
+            // - Dynamically allocated memory associated with it is no longer needed.
+            // - Deleting it avoids memory leaks and keeps the simulation state clean.
             delete settlement;
         }
     }
 
-    // Assign retained settlements back to this->settlements
+    // Replace `this->settlements` with the retained settlements.
     settlements = retainedSettlements;
 
-    // Clear facilities (no dynamic memory)
-    facilitiesOptions.clear();
-
-    // Copy primitive and value-based members
+    // Copy primitive and value-based members.
     isRunning = other.isRunning;
     planCounter = other.planCounter;
 
-    // Deep copy dynamically allocated members
-    for (BaseAction* action : other.actionsLog)
-    {
-        actionsLog.push_back(action->clone());
+    // Deep copy dynamically allocated members other than settlements (already handled above).
+    for (BaseAction* action : other.actionsLog) {
+        actionsLog.push_back(action->clone()); // Clone each action in the log.
     }
-    for (Plan plan : other.plans)
-    {
-        plans.push_back(Plan(plan)); // Copy each Plan using its copy constructor
+
+    for (Plan plan : other.plans) {
+        plans.push_back(Plan(plan)); // Copy each Plan using its copy constructor.
     }
-    for (FacilityType facility : other.facilitiesOptions)
-    {
-        facilitiesOptions.push_back(FacilityType(facility));
+
+    for (FacilityType facility : other.facilitiesOptions) {
+        facilitiesOptions.push_back(FacilityType(facility)); // Copy FacilityType objects.
     }
 
     return *this;
@@ -238,35 +221,83 @@ Simulation::Simulation(Simulation &&other)
 }
 
 // Move Assignment Operator
-Simulation &Simulation::operator=(Simulation &&other)
-{
+Simulation &Simulation::operator=(Simulation &&other) {
     // Check for self-assignment to avoid unnecessary work and potential issues.
-    if (this == &other)
-    {
+    if (this == &other) {
         return *this;
     }
 
-    // Clean up existing resources to prepare the current object for new ownership
-    cleanSim();
+    // Iterate through settlements in `this->settlements` and delete only those not in `other.settlements`.
+    for (Settlement* settlement : settlements) {
+        bool found = false;
+        // Check if the settlement exists in `other.settlements`.
+        for (Settlement* otherSettlement : other.settlements) {
+            if (otherSettlement->getName() == settlement->getName()) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            // Settlement exists only in `this`, delete it.
+            delete settlement;
+        }
+    }
 
+    // Overwrite `this->settlements` with `other.settlements` using std::move.
+    settlements = std::move(other.settlements);
+
+    // Clear `this->plans` as they will be replaced by `other.plans` below.
+    plans.clear();
+
+    // Free dynamically allocated actions in `this->actionsLog`.
+    for (BaseAction* action : actionsLog) {
+        delete action;
+    }
+    actionsLog.clear();
+    
+    // Clear `this->facilitiesOptions` (shallow clear as FacilityType doesn't use dynamic memory).
+    facilitiesOptions.clear();
+
+    // Move other resources into `this` to transfer ownership.
+    actionsLog = std::move(other.actionsLog);
+    plans = std::move(other.plans);
+    facilitiesOptions = std::move(other.facilitiesOptions);
+
+    // Copy primitive and value-based members from `other`.
     isRunning = other.isRunning;
     planCounter = other.planCounter;
 
-    // Use std::move for efficient ownership transfer, avoiding deep copying.
-    actionsLog = std::move(other.actionsLog);
-    plans = std::move(other.plans);
-    settlements = std::move(other.settlements);
-    facilitiesOptions = std::move(other.facilitiesOptions);
+    // Leave `other` in a valid empty state to ensure safe destruction.
+    // This makes it clear that `other` is no longer usable after the move.
+    other.settlements.clear();
+    other.actionsLog.clear();
+    other.plans.clear();
+    other.facilitiesOptions.clear();
+    other.isRunning = false;
+    other.planCounter = 0;
 
     return *this;
 }
 
 // Destructor
-Simulation::~Simulation()
-{
-    // Call cleanSim() to free all dynamically allocated resources
-    // This ensures proper cleanup of BaseAction and Settlement objects
-    cleanSim();
+Simulation::~Simulation() {
+    // Free dynamically allocated actions
+    for (BaseAction* action : actionsLog) {
+        delete action;
+    }
+    actionsLog.clear(); // Ensures a clean state before destruction, though not strictly necessary.
+
+    // Free dynamically allocated settlements
+    for (Settlement* settlement : settlements) {
+        delete settlement;
+    }
+    settlements.clear(); // Prevents dangling pointers, though the destructor handles it.
+
+    // Clear plans (no dynamic allocation, just reset the vector)
+    plans.clear(); // Optional but ensures explicit reset of the vector.
+
+    // Clear facilities (no dynamic memory, just reset the vector)
+    facilitiesOptions.clear(); // Keeps the state consistent, though not strictly required.
 }
 
 
@@ -369,7 +400,22 @@ void Simulation::close() {
     isRunning = false;
 
     // Free allocated memory
-    cleanSim();
+    for (BaseAction* action : actionsLog) {
+        delete action;
+    }
+    actionsLog.clear(); // Ensures a clean state before destruction, though not strictly necessary.
+
+    // Free dynamically allocated settlements
+    for (Settlement* settlement : settlements) {
+        delete settlement;
+    }
+    settlements.clear(); // Prevents dangling pointers, though the destructor handles it.
+
+    // Clear plans (no dynamic allocation, just reset the vector)
+    plans.clear(); // Optional but ensures explicit reset of the vector.
+
+    // Clear facilities (no dynamic memory, just reset the vector)
+    facilitiesOptions.clear(); // Keeps the state consistent, though not strictly required.
 
     // Reset planCounter
     planCounter = 0;

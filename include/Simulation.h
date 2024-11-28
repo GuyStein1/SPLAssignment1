@@ -20,9 +20,6 @@ class Simulation {
         Simulation(Simulation &&other); // Move constructor
         Simulation &operator=(Simulation &&other); // Move assignment operator
         ~Simulation(); // Destructor 
-
-        //Helper function to delete heap allocated pointers
-        void cleanSim();
         
         // Getter for actions log
         const vector<BaseAction*>& getActionsLog() const;
