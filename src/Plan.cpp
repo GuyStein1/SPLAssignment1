@@ -46,7 +46,7 @@ void Plan::clean() {
 Plan::Plan(const Plan &other)
     // Create a new object as a copy of an existing object
     : plan_id(other.plan_id),
-      settlement(other.settlement),
+      settlement(*new Settlement(other.settlement)),
       selectionPolicy(other.selectionPolicy->clone()),
       status(other.status),
       facilityOptions(other.facilityOptions),
