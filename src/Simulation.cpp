@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <iostream>
 
+#include <algorithm>
+
 Simulation::Simulation(const string &configFilePath)
     : isRunning(false),    // Simulation starts as running
       planCounter(0),     // Initialize plan counter
@@ -133,27 +135,25 @@ Simulation::Simulation(const Simulation &other)
     }
 }
 
-// Helper function to delete heap allocated pointers
+// Helper function to delete all heap allocated pointers
 void Simulation::cleanSim() {
-    // Clear plans by invoking the destructor for each Plan object
-    plans.clear(); // Plans are not dynamically allocated, so no need for manual deletion
-    
-    // Free dynamically allocated memory
-    for (BaseAction* action : actionsLog)
-    {
+    // Clear plans (no dynamic allocation in Plan, so just clear the vector)
+    plans.clear();
+
+    // Free dynamically allocated actions
+    for (BaseAction* action : actionsLog) {
         delete action;
     }
-    actionsLog.clear(); //Remove all elements from the vector, avoiding dangling pointers to freed memory
+    actionsLog.clear();
 
-    // Free dynamically allocated memory
-    for (Settlement* settlement : settlements)
-    {
-        delete settlement; 
+    // Free dynamically allocated settlements
+    for (Settlement* settlement : settlements) {
+        delete settlement; // Properly delete settlements
     }
-     settlements.clear(); //Remove all elements from the vector, avoiding dangling pointers to freed memory
+    settlements.clear();
 
-    // Clear facilitiesOptions
-    facilitiesOptions.clear(); // FacilityType does not involve dynamic memory, so shallow clear is sufficient
+    // Clear facilities (no dynamic memory)
+    facilitiesOptions.clear();
 }
 
 
@@ -165,8 +165,41 @@ Simulation &Simulation::operator=(const Simulation &other) {
         return *this;
     }
 
-    // Clean up existing resources to prepare for the new data
-    cleanSim();
+    // Clear plans (no dynamic allocation in Plan, so just clear the vector)
+    plans.clear();
+
+    // Free dynamically allocated actions
+    for (BaseAction* action : actionsLog) {
+        delete action;
+    }
+    actionsLog.clear();
+
+    // Temporary vector to hold settlements to retain
+    vector<Settlement*> retainedSettlements;
+
+    // We want to delete all heap allocated settlements that aren't in use anymore.
+    for (Settlement* settlement : settlements) {
+        // Check if the settlement exists in `other.settlements`
+        auto it = std::find_if(
+            other.settlements.begin(),
+            other.settlements.end(),
+            [&settlement](Settlement* s) { return s->getName() == settlement->getName(); }
+        );
+
+        if (it != other.settlements.end()) {
+            // Settlement exists in `other`, retain it
+            retainedSettlements.push_back(settlement);
+        } else {
+            // Settlement does not exist in `other`, delete it
+            delete settlement;
+        }
+    }
+
+    // Assign retained settlements back to this->settlements
+    settlements = retainedSettlements;
+
+    // Clear facilities (no dynamic memory)
+    facilitiesOptions.clear();
 
     // Copy primitive and value-based members
     isRunning = other.isRunning;
@@ -181,16 +214,10 @@ Simulation &Simulation::operator=(const Simulation &other) {
     {
         plans.push_back(Plan(plan)); // Copy each Plan using its copy constructor
     }
-    for (Settlement* settlement : other.settlements)
-    {
-        settlements.push_back(new Settlement(*settlement));
-    }
     for (FacilityType facility : other.facilitiesOptions)
     {
         facilitiesOptions.push_back(FacilityType(facility));
     }
-
-    
 
     return *this;
 }
@@ -254,9 +281,8 @@ void Simulation::start() {
 void Simulation::addPlan(const Settlement &settlement, SelectionPolicy *selectionPolicy) {
     // Create a new plan with a unique ID, using the provided settlement and selection policy
     Plan newPlan(planCounter++, settlement, selectionPolicy, facilitiesOptions);
-
-    // Move the new plan into the plans vector using the move constructor
-    plans.push_back(std::move(newPlan)); // This invokes the move constructor of Plan
+    
+    plans.push_back(newPlan); 
 }
 
 void Simulation::addAction(BaseAction *action) {

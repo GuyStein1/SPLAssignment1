@@ -17,8 +17,7 @@ Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *sele
       economy_score(0),
       environment_score(0),
       facilities(),
-      underConstruction(),
-      ownSettlement(false){
+      underConstruction() {
 }
 
 //Helper function to delete heap allocated pointers
@@ -27,13 +26,6 @@ void Plan::clean() {
     // Delete the selection policy
     delete selectionPolicy;
     selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
-    if (ownSettlement)
-    {
-         // Delete dynamically allocated Settlement (allocated in the copy constructor)
-        delete &settlement;
-    }
-    
-   
 
     // Free dynamically allocated memory
     for (Facility *facility : facilities)
@@ -54,7 +46,7 @@ void Plan::clean() {
 Plan::Plan(const Plan &other)
     // Create a new object as a copy of an existing object
     : plan_id(other.plan_id),
-      settlement(*new Settlement(other.settlement)),
+      settlement(other.settlement),
       selectionPolicy(other.selectionPolicy->clone()),
       status(other.status),
       facilityOptions(other.facilityOptions),
@@ -62,8 +54,7 @@ Plan::Plan(const Plan &other)
       economy_score(other.economy_score),
       environment_score(other.environment_score),
       facilities(),
-      underConstruction(),
-      ownSettlement(true) {
+      underConstruction() {
 
     // Deep copy facilities and underConstruction.
     for (Facility *facility : other.facilities)
@@ -139,8 +130,7 @@ Plan::Plan(Plan &&other)
 
       //Use std::move for efficient ownership transfer, avoiding deep copying.
       facilities(std::move(other.facilities)),              // Move vector
-      underConstruction(std::move(other.underConstruction)), // Move vector
-      ownSettlement(false){
+      underConstruction(std::move(other.underConstruction)) {// Move vector 
 
     other.selectionPolicy = nullptr; //Nullify pointer to prevent double deletion
     other.facilities.clear(); // Optional: leave other in a valid empty state
