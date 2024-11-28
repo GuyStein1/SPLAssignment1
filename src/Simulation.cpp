@@ -177,7 +177,7 @@ Simulation &Simulation::operator=(const Simulation &other) {
     {
         actionsLog.push_back(action->clone());
     }
-    for (Plan plan : plans)
+    for (Plan plan : other.plans)
     {
         plans.push_back(Plan(plan)); // Copy each Plan using its copy constructor
     }
