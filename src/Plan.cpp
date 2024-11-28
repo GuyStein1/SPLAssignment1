@@ -297,13 +297,17 @@ void Plan::printStatus() {
     std::cout << "LifeQualityScore: " << life_quality_score << "\n";
     std::cout << "EconomyScore: " << economy_score << "\n";
     std::cout << "EnvironmentScore: " << environment_score << "\n";
+    
+    // Print facilities under construction
+    for (const Facility* facility : underConstruction) {
+        std::cout << "FacilityName: " << facility->getName() << "\n";
+        std::cout << "FacilityStatus: UNDER_CONSTRUCTION\n";
+    }
 
-    // Print each facility's details
+    // Print operational facilities
     for (const Facility* facility : facilities) {
         std::cout << "FacilityName: " << facility->getName() << "\n";
-        std::cout << "FacilityStatus: " 
-                  << (facility->getStatus() == FacilityStatus::OPERATIONAL ? "OPERATIONAL" : "UNDER_CONSTRUCTION") 
-                  << "\n";
+        std::cout << "FacilityStatus: OPERATIONAL\n";
     }
 }
 
