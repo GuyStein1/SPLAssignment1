@@ -46,7 +46,7 @@ void Plan::clean() {
 Plan::Plan(const Plan &other)
     // Create a new object as a copy of an existing object
     : plan_id(other.plan_id),
-      settlement(other.settlement),
+      settlement(*new Settlement(other.settlement)),
       selectionPolicy(other.selectionPolicy->clone()),
       status(other.status),
       facilityOptions(other.facilityOptions),
@@ -120,7 +120,7 @@ Plan::Plan(const Plan &other)
 Plan::Plan(Plan &&other)
     // Transfer ownership of resources from the source object (other) to this new instance.
     : plan_id(other.plan_id),
-      settlement(other.settlement), //Transfer the pointer
+      settlement(*new Settlement(other.settlement)), //Transfer the pointer
       selectionPolicy(other.selectionPolicy), // Transfer ownership
       status(other.status),
       facilityOptions(other.facilityOptions), // Reference, no need to reassign
