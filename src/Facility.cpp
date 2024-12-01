@@ -68,9 +68,9 @@ void Facility::setStatus(FacilityStatus status){
 FacilityStatus Facility::step() {
     if (timeLeft > 0) {
         timeLeft--;
-        if (timeLeft == 0) {
-            status = FacilityStatus::OPERATIONAL;
-        }
+    }
+    if (timeLeft == 0) {
+        status = FacilityStatus::OPERATIONAL;
     }
     return status;
 }

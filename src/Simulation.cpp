@@ -21,56 +21,61 @@ Simulation::Simulation(const string &configFilePath)
     std::ifstream configFile(configFilePath);
     if (!configFile.is_open())
     {
-        throw std::runtime_error("Failed to open configuration file.");
+        throw std::runtime_error("Failed to open configuration file."); // Ensure the file is accessible
     }
 
     std::string line;
     while (std::getline(configFile, line))
     {
-        // Ignore comments and blank lines
+        // Ignore comments (lines starting with '#') and blank lines
         if (line.empty() || line[0] == '#')
         {
             continue;
         }
 
-        // Parse the arguments from the line
+        // Tokenize the line into arguments
         std::vector<std::string> args = Auxiliary::parseArguments(line);
         if (args.empty())
         {
-            continue;
+            continue; // Skip invalid or empty lines
         }
 
-        // Process each entry based on its type
+        // Handle configuration based on the first token (entry type)
         if (args[0] == "settlement")
         {
+            // Validate the format for settlements
             if (args.size() != 3)
             {
                 throw std::runtime_error("Invalid settlement format in config file.");
             }
             std::string settlementName = args[1];
-            SettlementType type = createSettlementType(std::stoi(args[2]));
-            Settlement *settlement = new Settlement(settlementName, type); // Dynamically allocate
-            settlements.push_back(settlement);
+            SettlementType type = createSettlementType(std::stoi(args[2])); // Convert type from integer
+            Settlement *settlement = new Settlement(settlementName, type);  // Allocate settlement dynamically
+            settlements.push_back(settlement);                              // Add to the settlements vector
         }
 
         else if (args[0] == "facility")
         {
+            // Validate the format for facilities
             if (args.size() != 7)
             {
                 throw std::runtime_error("Invalid facility format in config file.");
             }
             std::string facilityName = args[1];
-            FacilityCategory category = createFacilityCategory(std::stoi(args[2]));
+            FacilityCategory category = createFacilityCategory(std::stoi(args[2])); // Convert category from integer
             int price = std::stoi(args[3]);
             int lifeQualityImpact = std::stoi(args[4]);
             int economyImpact = std::stoi(args[5]);
             int environmentImpact = std::stoi(args[6]);
+
+            // Create and add the facility to the list of options
             FacilityType facility(facilityName, category, price, lifeQualityImpact, economyImpact, environmentImpact);
             facilitiesOptions.push_back(facility);
         }
 
         else if (args[0] == "plan")
         {
+            // Validate the format for plans
             if (args.size() != 3)
             {
                 throw std::runtime_error("Invalid plan format in config file.");
@@ -78,33 +83,33 @@ Simulation::Simulation(const string &configFilePath)
             std::string settlementName = args[1];
             std::string selectionPolicy = args[2];
 
-            SelectionPolicy* policy = createPolicy(selectionPolicy);
+            SelectionPolicy *policy = createPolicy(selectionPolicy); // Dynamically allocate the selection policy
 
-            Settlement *p = settlements[0];
+            Settlement *p = settlements[0]; // Default to the first settlement (to avoid null pointer)
             for (size_t i = 0; i < settlements.size(); i++)
             {
                 if (settlements[i]->getName() == settlementName)
                 {
-                    // Settlement found
-                    p = settlements[i];
+                    p = settlements[i]; // Match the settlement name
                     break;
-                } else if (i == settlements.size() - 1)
+                }
+                else if (i == settlements.size() - 1)
                 {
                     throw std::runtime_error("Settlement not found for plan: " + settlementName);
                 }
             }
 
-            // Create the plan and associate it with the settlement
-            Plan plan(planCounter++, *p, policy, facilitiesOptions); 
+            // Create a new plan associated with the matched settlement
+            Plan plan(planCounter++, *p, policy, facilitiesOptions);
             plans.push_back(plan);
         }
         else
         {
-            throw std::runtime_error("Unknown configuration entry type: " + args[0]);
+            throw std::runtime_error("Unknown configuration entry type: " + args[0]); // Handle unknown entries
         }
     }
 
-    configFile.close();
+    configFile.close(); // Ensure the file is closed after processing
 }
 
 // Copy Constructor
@@ -304,9 +309,104 @@ Simulation::~Simulation() {
 void Simulation::start() {
     // Log the start of the simulation
     std::cout << "The simulation has started" << std::endl;
+    
     isRunning = true; // Set the simulation state to running
 
-    runCommandLoop();
+    while (isRunning) {                      
+        std::cout << "> "; // Prompt the user
+        std::string input;
+        std::getline(std::cin, input); // Read the full user input as a single line
+
+        std::istringstream iss(input); // Parse the input into tokens
+        std::string command;
+        iss >> command; // Extract the first token as the command
+
+        if (command == "step") {
+            int numOfSteps;
+            iss >> numOfSteps; // Attempt to extract the number of steps
+            if (iss.fail() || numOfSteps <= 0) {
+                throw std::runtime_error("Invalid input for step");
+            }
+            SimulateStep action(numOfSteps); // Create an action for simulating steps
+            action.act(*this);
+        }
+        else if (command == "plan") {
+            std::string settlementName, selectionPolicy;
+            iss >> settlementName >> selectionPolicy; // Extract settlement and policy
+            if (settlementName.empty() || selectionPolicy.empty()) {
+                throw std::runtime_error("Invalid input for plan");
+            }
+            AddPlan action(settlementName, selectionPolicy); // Add a plan
+            action.act(*this);
+        }
+        else if (command == "settlement") {
+            std::string settlementName;
+            int settlementTypeInt;
+            iss >> settlementName >> settlementTypeInt; // Extract settlement name and type as an int
+            if (settlementName.empty() || iss.fail() || settlementTypeInt < 0 || settlementTypeInt > 2) {
+                throw std::runtime_error("Invalid input for settlement");
+            }
+
+            // Convert integer to SettlementType using static_cast
+            // `static_cast` ensures a safe and explicit conversion to an enum type.
+            SettlementType settlementType = static_cast<SettlementType>(settlementTypeInt);
+
+            AddSettlement action(settlementName, settlementType); // Add a settlement
+            action.act(*this);
+        }
+        else if (command == "facility") {
+            std::string facilityName;
+            int category, price, lifeQ, economy, environment;
+            iss >> facilityName >> category >> price >> lifeQ >> economy >> environment; // Extract facility details
+            if (facilityName.empty() || iss.fail() || category < 0 || category > 2 || price < 0 || lifeQ < 0 || economy < 0 || environment < 0) {
+                throw std::runtime_error("Invalid input for facility");
+            }
+
+            // Convert integer to FacilityCategory using static_cast
+            FacilityCategory facilityCategory = static_cast<FacilityCategory>(category);
+
+            AddFacility action(facilityName, facilityCategory, price, lifeQ, economy, environment); // Add a facility
+            action.act(*this);
+        }
+        else if (command == "planStatus") {
+            int planId;
+            iss >> planId; // Extract plan ID
+            if (iss.fail()) {
+                throw std::runtime_error("Invalid input for planStatus");
+            }
+            PrintPlanStatus action(planId); // Print the status of a specific plan
+            action.act(*this);
+        }
+        else if (command == "changePolicy") {
+            int planId;
+            std::string newPolicy;
+            iss >> planId >> newPolicy; // Extract plan ID and new policy
+            if (iss.fail() || newPolicy.empty()) {
+                throw std::runtime_error("Invalid input for changePolicy");
+            }
+            ChangePlanPolicy action(planId, newPolicy); // Change the policy of a specific plan
+            action.act(*this);
+        }
+        else if (command == "log") {
+            PrintActionsLog action; // Log all actions taken
+            action.act(*this);
+        }
+        else if (command == "backup") {
+            BackupSimulation action; // Backup the current simulation state
+            action.act(*this);
+        }
+        else if (command == "restore") {
+            RestoreSimulation action; // Restore the simulation from backup
+            action.act(*this);
+        }
+        else if (command == "close") {
+            Close action; // Close the simulation
+            action.act(*this);
+        }
+        else {
+            throw std::runtime_error("Unknown command"); // Handle invalid commands
+        }
+    }
 }
 
 void Simulation::addPlan(const Settlement &settlement, SelectionPolicy *selectionPolicy) {
@@ -427,112 +527,11 @@ void Simulation::close() {
 void Simulation::open() {
     // Reinitialize key members
     isRunning = true;
-    std::cout << "Simulation has been reopened." << std::endl;
-
-    // Run the command loop to accept new actions
-    runCommandLoop();
 }
 
 
-// ---------- User Interface Implementation ----------
 
-void Simulation::runCommandLoop() {
-    while (true) { // Infinite loop to allow reopening
-        if (!isRunning) {
-            std::cout << "Simulation is closed. Type 'open' to restart or 'exit' to quit." << std::endl;
-        }
 
-        std::cout << "> "; // Prompt the user
-        std::string input;
-        std::getline(std::cin, input);
-
-        std::istringstream iss(input);
-        std::string command;
-        iss >> command;
-
-        try {
-            if (command == "step") {
-                int numOfSteps;
-                iss >> numOfSteps;
-                if (iss.fail() || numOfSteps <= 0) {
-                    throw std::runtime_error("Invalid input for step");
-                }
-                SimulateStep action(numOfSteps);
-                action.act(*this);
-            } else if (command == "plan") {
-                std::string settlementName, selectionPolicy;
-                iss >> settlementName >> selectionPolicy;
-                if (settlementName.empty() || selectionPolicy.empty()) {
-                    throw std::runtime_error("Invalid input for plan");
-                }
-                AddPlan action(settlementName, selectionPolicy);
-                action.act(*this);
-            } else if (command == "settlement") {
-                std::string settlementName;
-                int settlementTypeInt;
-                iss >> settlementName >> settlementTypeInt;
-                if (settlementName.empty() || iss.fail() || settlementTypeInt < 0 || settlementTypeInt > 2) {
-                    throw std::runtime_error("Invalid input for settlement");
-                }
-                SettlementType settlementType = static_cast<SettlementType>(settlementTypeInt);
-                AddSettlement action(settlementName, settlementType);
-                action.act(*this);
-            } else if (command == "facility") {
-                std::string facilityName;
-                int category, price, lifeQ, economy, environment;
-                iss >> facilityName >> category >> price >> lifeQ >> economy >> environment;
-                if (facilityName.empty() || iss.fail() || category < 0 || category > 2 || price < 0 || lifeQ < 0 || economy < 0 || environment < 0) {
-                    throw std::runtime_error("Invalid input for facility");
-                }
-                FacilityCategory facilityCategory = static_cast<FacilityCategory>(category);
-                AddFacility action(facilityName, facilityCategory, price, lifeQ, economy, environment);
-                action.act(*this);
-            } else if (command == "planStatus") {
-                int planId;
-                iss >> planId;
-                if (iss.fail()) {
-                    throw std::runtime_error("Invalid input for planStatus");
-                }
-                PrintPlanStatus action(planId);
-                action.act(*this);
-            } else if (command == "changePolicy") {
-                int planId;
-                std::string newPolicy;
-                iss >> planId >> newPolicy;
-                if (iss.fail() || newPolicy.empty()) {
-                    throw std::runtime_error("Invalid input for changePolicy");
-                }
-                ChangePlanPolicy action(planId, newPolicy);
-                action.act(*this);
-            } else if (command == "log") {
-                PrintActionsLog action;
-                action.act(*this);
-            } else if (command == "backup") {
-                BackupSimulation action;
-                action.act(*this);
-            } else if (command == "restore") {
-                RestoreSimulation action;
-                action.act(*this);
-            } else if (command == "close") {
-                Close action;
-                action.act(*this);
-                isRunning = false; // Mark the simulation as closed
-            } else if (command == "open") {
-                if (!isRunning) {
-                    open();
-                } else {
-                    std::cout << "Simulation is already running." << std::endl;
-                }
-            } else if (command == "exit") {
-                break; // Exit the loop and terminate the program
-            } else {
-                throw std::runtime_error("Unknown command");
-            }
-        } catch (const std::exception &e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-        }
-    }
-}
 
 
 
