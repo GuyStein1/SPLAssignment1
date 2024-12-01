@@ -8,7 +8,7 @@ extern Simulation* backup;
 
 
 // ---------- BaseAction Implementation ----------
-BaseAction::BaseAction() : status(ActionStatus::COMPLETED), errorMsg("") {}
+BaseAction::BaseAction() : errorMsg(""), status(ActionStatus::COMPLETED) {}
 
 ActionStatus BaseAction::getStatus() const {
     return status;

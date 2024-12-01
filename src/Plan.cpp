@@ -11,13 +11,13 @@ Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *sele
     : plan_id(planId),
       settlement(settlement),
       selectionPolicy(selectionPolicy),
-      facilityOptions(facilityOptions),
       status(PlanStatus::AVALIABLE),
+      facilities(),
+      underConstruction(),
+      facilityOptions(facilityOptions),
       life_quality_score(0),
       economy_score(0),
-      environment_score(0),
-      facilities(),
-      underConstruction() {
+      environment_score(0) {
 }
 
 //Helper function to delete heap allocated pointers
@@ -49,12 +49,12 @@ Plan::Plan(const Plan &other)
       settlement(other.settlement),
       selectionPolicy(other.selectionPolicy->clone()),
       status(other.status),
+      facilities(),
+      underConstruction(),
       facilityOptions(other.facilityOptions),
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
-      environment_score(other.environment_score),
-      facilities(),
-      underConstruction() {
+      environment_score(other.environment_score) {
 
     // Deep copy facilities and underConstruction.
     for (Facility *facility : other.facilities)
@@ -114,31 +114,27 @@ Plan::Plan(const Plan &other)
 //     return *this;
 // }
 
-
-
 // Move Constructor
 Plan::Plan(Plan &&other)
     // Transfer ownership of resources from the source object (other) to this new instance.
     : plan_id(other.plan_id),
-      settlement(other.settlement), //Transfer the pointer
+      settlement(other.settlement),           // Transfer the pointer
       selectionPolicy(other.selectionPolicy), // Transfer ownership
       status(other.status),
+      // Use std::move for efficient ownership transfer, avoiding deep copying.
+      facilities(std::move(other.facilities)),
+      underConstruction(std::move(other.underConstruction)),
       facilityOptions(other.facilityOptions), // Reference, no need to reassign
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
-      environment_score(other.environment_score),
+      environment_score(other.environment_score)
+{
 
-      //Use std::move for efficient ownership transfer, avoiding deep copying.
-      facilities(std::move(other.facilities)),              // Move vector
-      underConstruction(std::move(other.underConstruction)) {// Move vector 
-
-    other.selectionPolicy = nullptr; //Nullify pointer to prevent double deletion
-    other.facilities.clear(); // Optional: leave other in a valid empty state
-    other.underConstruction.clear(); // Optional: leave other in a valid empty state
+    other.selectionPolicy = nullptr;      // Nullify pointer to prevent double deletion
+    other.facilities.clear();             // Optional: leave other in a valid empty state
+    other.underConstruction.clear();      // Optional: leave other in a valid empty state
     other.status = PlanStatus::AVALIABLE; // Reset status to a default state
 }
-
-
 
 // Move Assignment Operator
 // Plan &Plan::operator=(Plan &&other) {
@@ -234,7 +230,7 @@ void Plan::step() {
     // Stage 1: Check if the plan is available to proceed with construction
     if (status == PlanStatus::AVALIABLE) {
         // Stage 2: Ensure the number of facilities under construction meets the settlement's type limit
-        int maxConstruction = static_cast<int>(settlement.getType()) + 1; // Maximum allowed facilities under construction
+        size_t maxConstruction = static_cast<size_t>(settlement.getType()) + 1; // Convert enum to size_t value
 
         while (underConstruction.size() < maxConstruction) {
             // Select a facility according to the selection policy
@@ -267,7 +263,7 @@ void Plan::step() {
     }
 
     // Stage 4: Update the plan's status based on the number of facilities under construction
-    status = (underConstruction.size() >= static_cast<int>(settlement.getType()) + 1) ? 
+    status = (underConstruction.size() >= static_cast<size_t>(settlement.getType()) + 1) ? 
              PlanStatus::BUSY : 
              PlanStatus::AVALIABLE;
 }
