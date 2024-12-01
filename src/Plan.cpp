@@ -309,12 +309,12 @@ void Plan::addFacility(Facility *facility) {
 
     // Check if the current selection policy is of type BalancedSelection using dynamic_cast.
     // If the cast succeeds, update the BalancedSelection scores with the plan's updated scores.
-    BalancedSelection *balancedPolicy = dynamic_cast<BalancedSelection *>(selectionPolicy);
-    if (balancedPolicy) {
-        balancedPolicy->setLifeQualityScore(life_quality_score + facility->getLifeQualityScore());
-        balancedPolicy->setEconomyScore(economy_score + facility->getEconomyScore());
-        balancedPolicy->setEnvironmentScore(environment_score + facility->getEnvironmentScore());
-    }
+    // BalancedSelection *balancedPolicy = dynamic_cast<BalancedSelection *>(selectionPolicy);
+    // if (balancedPolicy) {
+    //     balancedPolicy->setLifeQualityScore(life_quality_score + facility->getLifeQualityScore());
+    //     balancedPolicy->setEconomyScore(economy_score + facility->getEconomyScore());
+    //     balancedPolicy->setEnvironmentScore(environment_score + facility->getEnvironmentScore());
+    // }
 }
 
 const string Plan::toString() const {

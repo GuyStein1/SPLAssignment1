@@ -58,6 +58,11 @@ const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>
         }
     }
 
+    // Update the BalancedSelection's scores to reflect the selected facility
+    LifeQualityScore += selectedFacility->getLifeQualityScore();
+    EconomyScore += selectedFacility->getEconomyScore();
+    EnvironmentScore += selectedFacility->getEnvironmentScore(); 
+
     return *selectedFacility;
 }
 
