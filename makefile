@@ -15,6 +15,6 @@ compile:src/Action.cpp src/Auxiliary.cpp src/Facility.cpp src/main.cpp src/Plan.
 	g++ -g -Wall -Weffc++ -std=c++11 -I./include -c -o bin/Simulation.o src/Simulation.cpp
 clean:
 	@echo "cleaning bin directory"
-	rm -f bin/*.o
+	rm -f bin/*
 
 
