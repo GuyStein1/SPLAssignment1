@@ -1,7 +1,7 @@
-all: clean link run
+all: clean link 
 
 link: compile
-	g++ -o bin/run bin/Action.o bin/Auxiliary.o bin/Facility.o bin/main.o bin/Plan.o bin/SelectionPolicy.o bin/Settlement.o bin/Simulation.o
+	g++ -o bin/simulation bin/Action.o bin/Auxiliary.o bin/Facility.o bin/main.o bin/Plan.o bin/SelectionPolicy.o bin/Settlement.o bin/Simulation.o
 
 compile:src/Action.cpp src/Auxiliary.cpp src/Facility.cpp src/main.cpp src/Plan.cpp src/SelectionPolicy.cpp src/Settlement.cpp src/Simulation.cpp
 	@echo "Compiling source code"
@@ -13,8 +13,6 @@ compile:src/Action.cpp src/Auxiliary.cpp src/Facility.cpp src/main.cpp src/Plan.
 	g++ -g -Wall -Weffc++ -std=c++11 -I./include -c -o bin/SelectionPolicy.o src/SelectionPolicy.cpp
 	g++ -g -Wall -Weffc++ -std=c++11 -I./include -c -o bin/Settlement.o src/Settlement.cpp
 	g++ -g -Wall -Weffc++ -std=c++11 -I./include -c -o bin/Simulation.o src/Simulation.cpp
-run: 
-	./bin/run config_file.txt
 clean:
 	@echo "cleaning bin directory"
 	rm -f bin/*.o
