@@ -1,9 +1,11 @@
 #include "Settlement.h"
 #include <iostream>
 
+//Constructor
 Settlement ::Settlement(const string &name, SettlementType type)
     : name(name), type(type) {}
 
+// Getter methods
 const string &Settlement :: getName() const {
     return name;
 }
@@ -22,7 +24,7 @@ const string Settlement :: toString() const {
     }
 }
 
-//Convert in to SettlementType
+// Helper method to convert int to SettlementType
 SettlementType createSettlementType(int value){
     switch (value)
     {
@@ -35,9 +37,4 @@ SettlementType createSettlementType(int value){
     default:
         throw std::invalid_argument("Invalid value for SettlementType");
     }
-}
-
-//Implement isEqual
-bool Settlement::isEqual(const Settlement& other) const {
-    return (this->getName() == other.getName() && this->getType() == other.getType());
 }

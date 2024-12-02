@@ -1,8 +1,9 @@
 #include "Plan.h"
 #include <iostream>
 #include <stdexcept>
-#include <algorithm> // For std::find
 #include <sstream> // For std::ostringstream
+
+//-----------Plan implementation-----------
 
 // Constructor
 Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *selectionPolicy, const vector<FacilityType> &facilityOptions)
@@ -18,33 +19,12 @@ Plan::Plan(const int planId, const Settlement &settlement, SelectionPolicy *sele
       environment_score(0) {
 }
 
-//Helper function to delete heap allocated pointers
-void Plan::clean() {
-    //Note: No need to check for nullptr before delete, since in modern C++ delete does nothing if the pointer is null
-    // Delete the selection policy
-    delete selectionPolicy;
-    selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
-
-    // Free dynamically allocated memory
-    for (Facility *facility : facilities)
-    {
-        delete facility;
-    }
-    facilities.clear(); //Remove all elements from the vector, avoiding dangling pointers to freed memory
-
-    // Free dynamically allocated memory
-    for (Facility *facility : underConstruction)
-    {
-        delete facility; 
-    }
-    underConstruction.clear(); //Remove all elements from the vector, avoiding dangling pointers to freed memory
-}
-
 // Copy Constructor
 Plan::Plan(const Plan &other)
     // Create a new object as a copy of an existing object
     : plan_id(other.plan_id),
       settlement(other.settlement),
+      // Create a deep copy of the selection policy using its `clone` method
       selectionPolicy(other.selectionPolicy->clone()),
       status(other.status),
       facilities(),
@@ -54,42 +34,55 @@ Plan::Plan(const Plan &other)
       economy_score(other.economy_score),
       environment_score(other.environment_score) {
 
-    // Deep copy facilities and underConstruction.
-    for (Facility *facility : other.facilities)
-    {
+    // Deep copy facilities and underConstruction to avoid shared ownership of dynamically allocated objects
+    for (Facility *facility : other.facilities) {
         facilities.push_back(new Facility(*facility));
     }
-    for (Facility *facility : other.underConstruction)
-    {
+    for (Facility *facility : other.underConstruction) {
         underConstruction.push_back(new Facility(*facility));
     }
 }
 
 // Move Constructor
 Plan::Plan(Plan &&other)
-    // Transfer ownership of resources from the source object (other) to this new instance.
+    // Transfer ownership of resources from the source object (other) to this new instance
     : plan_id(other.plan_id),
-      settlement(other.settlement),           // Transfer the pointer
-      selectionPolicy(other.selectionPolicy), // Transfer ownership
+      settlement(other.settlement), // Transfer reference to the same settlement
+      selectionPolicy(other.selectionPolicy), // Take ownership of the selection policy
       status(other.status),
-      // Use std::move for efficient ownership transfer, avoiding deep copying.
+      // Use std::move to transfer ownership of dynamic resources efficiently
       facilities(std::move(other.facilities)),
       underConstruction(std::move(other.underConstruction)),
-      facilityOptions(other.facilityOptions), // Reference, no need to reassign
+      facilityOptions(other.facilityOptions), // Copy the reference to facility options
       life_quality_score(other.life_quality_score),
       economy_score(other.economy_score),
       environment_score(other.environment_score)
 {
-
-    other.selectionPolicy = nullptr;      // Nullify pointer to prevent double deletion
-    other.facilities.clear();             // Optional: leave other in a valid empty state
-    other.underConstruction.clear();      // Optional: leave other in a valid empty state
-    other.status = PlanStatus::AVALIABLE; // Reset status to a default state
+    other.selectionPolicy = nullptr;      // Prevent double deletion of selectionPolicy
+    other.facilities.clear();             // Leave `other` in a valid empty state
+    other.underConstruction.clear();      // Leave `other` in a valid empty state
+    other.status = PlanStatus::AVALIABLE; // Reset `other` to a default state
 }
 
 // Destructor
 Plan::~Plan() {
-    clean();
+    // Note: No need to check for nullptr before delete, since in modern C++ delete does nothing if the pointer is null
+
+    // Delete the selection policy
+    delete selectionPolicy;
+    selectionPolicy = nullptr; // Nullify the pointer to avoid accidental reuse
+
+    // Free dynamically allocated memory
+    for (Facility *facility : facilities) {
+        delete facility;
+    }
+    facilities.clear(); // Remove all elements from the vector, avoiding dangling pointers to freed memory
+
+    // Free dynamically allocated memory
+    for (Facility *facility : underConstruction) {
+        delete facility;
+    }
+    underConstruction.clear(); // Remove all elements from the vector, avoiding dangling pointers to freed memory
 }
 
 // Getter methods
@@ -132,8 +125,7 @@ const vector<Facility*>& Plan::getFacilitiesUnderConstruction() const {
 // Set selection policy
 void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
 {
-    if (selectionPolicy)
-    {
+    if (selectionPolicy) {
         delete selectionPolicy; // Clean up the existing policy
     }
     selectionPolicy = newPolicy; // Assign the new policy
@@ -142,8 +134,12 @@ void Plan::setSelectionPolicy(SelectionPolicy *newPolicy)
 void Plan::step() {
     // Stage 1: Check if the plan is available to proceed with construction
     if (status == PlanStatus::AVALIABLE) {
-        // Stage 2: Ensure the number of facilities under construction meets the settlement's type limit
-        size_t maxConstruction = static_cast<size_t>(settlement.getType()) + 1; // Convert enum to size_t value
+        // Stage 2: Use the selection policy to choose facilities for construction, repeating until the settlement's construction limit is reached. 
+
+        // Convert the settlement type (enum) to size_t for compatibility with container sizes.
+        // The static_cast ensures a safe conversion of the settlement type, which is an enum, into a numerical value that
+        // can be used for arithmetic operations and compared with the vector's size.
+        size_t maxConstruction = static_cast<size_t>(settlement.getType()) + 1;
 
         while (underConstruction.size() < maxConstruction) {
             // Select a facility according to the selection policy
@@ -181,6 +177,11 @@ void Plan::step() {
              PlanStatus::AVALIABLE;
 }
 
+void Plan::addFacility(Facility *facility) {
+    // Add the newly created facility to the underConstruction list
+    underConstruction.push_back(facility);
+}
+
 void Plan::printStatus() {
     // Print the plan ID
     std::cout << "PlanID: " << plan_id << "\n";
@@ -214,11 +215,6 @@ void Plan::printStatus() {
         std::cout << "FacilityName: " << facility->getName() << "\n";
         std::cout << "FacilityStatus: OPERATIONAL\n";
     }
-}
-
-void Plan::addFacility(Facility *facility) {
-    // Add the newly created facility to the underConstruction list
-    underConstruction.push_back(facility);
 }
 
 const string Plan::toString() const {

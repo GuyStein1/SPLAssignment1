@@ -5,11 +5,11 @@
 #include <string>
 #include <sstream>
 
-//NaiveSelection implementation
+//-----------NaiveSelection implementation-----------
 NaiveSelection::NaiveSelection() : lastSelectedIndex(-1) {}
 
 const FacilityType& NaiveSelection::selectFacility(const vector<FacilityType>& facilitiesOptions) {
-    // Check for empty facilities list or if all facilities have already been selected
+    // Check for empty facilities list (optional)
     if (facilitiesOptions.empty()) {
         throw std::runtime_error("No facilities available for selection.");
     }
@@ -27,7 +27,7 @@ NaiveSelection* NaiveSelection::clone() const {
     return new NaiveSelection(*this);
 }
 
-//BalancedSelection implementation
+//-----------BalancedSelection implementation-----------
 BalancedSelection::BalancedSelection(int lifeQuality, int economy, int environment)
     : LifeQualityScore(lifeQuality), EconomyScore(economy), EnvironmentScore(environment) {}
 
@@ -66,7 +66,7 @@ const FacilityType& BalancedSelection::selectFacility(const vector<FacilityType>
     return *selectedFacility;
 }
 
-// Getter methods to retrieve scores
+// Getter methods to retrieve balanced selection scores
 int BalancedSelection::getLifeQualityScore() const {
     return LifeQualityScore;
 }
@@ -93,7 +93,7 @@ void BalancedSelection::setEconomyScore(int score) { EconomyScore = score; }
 void BalancedSelection::setEnvironmentScore(int score) { EnvironmentScore = score; }
 
 
-//EconomySelection implementation
+//-----------EconomySelection implementation-----------
 EconomySelection::EconomySelection() : lastSelectedIndex(-1) {}
 
 const FacilityType& EconomySelection::selectFacility(const vector<FacilityType>& facilitiesOptions) {
@@ -121,7 +121,7 @@ EconomySelection* EconomySelection::clone() const {
 }
 
 
-//SustainabilitySelection implementation
+//-----------SustainabilitySelection implementation-----------
 SustainabilitySelection::SustainabilitySelection() : lastSelectedIndex(-1) {}
 
 const FacilityType& SustainabilitySelection::selectFacility(const vector<FacilityType>& facilitiesOptions) {
@@ -147,6 +147,8 @@ const string SustainabilitySelection::toString() const {
 SustainabilitySelection* SustainabilitySelection::clone() const {
     return new SustainabilitySelection(*this);
 }
+
+
 
 //Helper function to convert string to policy
 SelectionPolicy* createPolicy(const std::string &policyName) {

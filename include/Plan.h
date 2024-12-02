@@ -21,9 +21,6 @@ class Plan {
         Plan &operator=(Plan &&other); // Move assignment operator
         ~Plan(); // Destructor
 
-        //Helper function to delete heap allocated pointers
-        void clean();
-
         //Getter for plan_id
         int getID() const;
 

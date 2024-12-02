@@ -1,11 +1,12 @@
 #include "Simulation.h"
 #include "Auxiliary.h"
 #include "Action.h"
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
-#include <iostream>
-#include <algorithm>
+#include <fstream>        // For file input/output operations ( reading the configuration file).
+#include <sstream>        // For tokenizing user input using istringstream.
+#include <stdexcept>      // For throwing and handling runtime errors.
+#include <iostream>       // For console I/O operations (logging messages with cout).
+
+// ---------- Simulation Implementation ----------
 
 Simulation::Simulation(const string &configFilePath)
     : isRunning(false),    // Simulation starts as running
@@ -112,28 +113,30 @@ Simulation::Simulation(const string &configFilePath)
 
 // Copy Constructor
 Simulation::Simulation(const Simulation &other)
-    : isRunning(other.isRunning),
-      planCounter(other.planCounter),
-      actionsLog(),
-      plans(),
-      settlements(),
+    : isRunning(other.isRunning), 
+      planCounter(other.planCounter), 
+      actionsLog(), 
+      plans(), 
+      settlements(), 
       facilitiesOptions() 
 {
-    // Deep copy other vectors
-    for (BaseAction* action : other.actionsLog)
-    {
+    // Deep copy of actionsLog: Clone each BaseAction to ensure unique ownership.
+    for (BaseAction* action : other.actionsLog) {
         actionsLog.push_back(action->clone());
     }
-    for (Plan plan : other.plans)
-    {
-        plans.push_back(Plan(plan)); //Copy each Plan using its copy constructor
+
+    // Deep copy of plans: Use the Plan copy constructor to duplicate plans.
+    for (Plan plan : other.plans) {
+        plans.push_back(Plan(plan)); 
     }
-    for (Settlement* settlement : other.settlements)
-    {
+
+    // Deep copy of settlements: Dynamically allocate and copy each Settlement.
+    for (Settlement* settlement : other.settlements) {
         settlements.push_back(new Settlement(*settlement));
     }
-    for (FacilityType facility : other.facilitiesOptions)
-    {
+
+    // Copy of facilitiesOptions: Since FacilityType has no dynamic members, use its copy constructor.
+    for (FacilityType facility : other.facilitiesOptions) {
         facilitiesOptions.push_back(FacilityType(facility));
     }
 }
@@ -157,14 +160,13 @@ Simulation &Simulation::operator=(const Simulation &other) {
     // Clear the facilitiesOptions vector (shallow clear as FacilityType doesn't use dynamic memory).
     facilitiesOptions.clear();
 
-    // Delete settlements in `this->settlements` that do not exist in `other.settlements`.
+    // Delete settlements in `this->settlements` that do not exist in `other.settlements`:
+
     // Temporary vector to hold settlements that will be retained.
     vector<Settlement*> retainedSettlements;
-
     // Iterate through settlements in `this->settlements`.
     for (Settlement* settlement : settlements) {
         bool found = false;
-
         // Check if the settlement exists in `other.settlements`.
         for (Settlement* otherSettlement : other.settlements) {
             if (otherSettlement->getName() == settlement->getName()) {
@@ -172,7 +174,6 @@ Simulation &Simulation::operator=(const Simulation &other) {
                 break;
             }
         }
-
         if (found) {
             // Retain the settlement if it exists in `other.settlements`.
             retainedSettlements.push_back(settlement);

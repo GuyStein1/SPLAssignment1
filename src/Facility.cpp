@@ -3,7 +3,7 @@
 #include <sstream> // For std::ostringstream
 
 
-//FacilityType implementation:
+//-----------FacilityType implementation-----------
 
 // Costructor for FacilityType
 FacilityType :: FacilityType(const string &name, const FacilityCategory category, const int price, 
@@ -36,8 +36,9 @@ FacilityCategory FacilityType :: getCategory() const {
     }
 
 
-//Facilty implementation:
+//-----------Facilty implementation-----------
 
+// Constructors
 Facility :: Facility(const string &name, const string &settlementName, const FacilityCategory category,
                    const int price, const int lifeQuality_score, const int economy_score, const int environment_score)
     : FacilityType(name, category, price, lifeQuality_score, economy_score, environment_score),
@@ -47,7 +48,7 @@ Facility :: Facility(const FacilityType &type, const string &settlementName)
     // The default copy constructor of FacilityType is safe as it has no dynamic memory, preventing leaks or double deletions.
     : FacilityType(type), settlementName(settlementName), status(FacilityStatus::UNDER_CONSTRUCTIONS), timeLeft(price) {}
 
-
+// Getter methods
 const string &Facility::getSettlementName() const {
     return settlementName;
 }
@@ -60,6 +61,7 @@ const int Facility::getTimeLeft() const {
     return timeLeft;
 }
 
+// Set status method
 void Facility::setStatus(FacilityStatus status){
     this->status = status;
 }
@@ -95,6 +97,7 @@ const string Facility::toString() const {
 
     return output.str();
 }
+
 
 //Helper function to convert int to FacilityCategory
 FacilityCategory createFacilityCategory(int value) {
