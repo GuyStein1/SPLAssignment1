@@ -1,9 +1,7 @@
 #include "Plan.h"
-#include "Settlement.h"
 #include <iostream>
 #include <stdexcept>
 #include <algorithm> // For std::find
-#include <string>    // For std::to_string
 #include <sstream> // For std::ostringstream
 
 // Constructor
@@ -67,53 +65,6 @@ Plan::Plan(const Plan &other)
     }
 }
 
-// Copy Assignment Operator
-// Plan &Plan::operator=(const Plan &other) {
-//     //Check for self-assignment to avoid unnecessary work and potential issues.
-//     if (this == &other)
-//     {
-//         return *this;
-//     }
-//     // Make sure settlements are the same
-//     if (!settlement.isEqual(other.settlement))
-//     {
-//         throw std::invalid_argument("Cannot assign plans to different settlements.");
-//     }
-//     // Make sure facility options are the same
-//     if (&facilityOptions != &other.facilityOptions)
-//     {
-//         throw std::invalid_argument("Cannot assign plans with different facility options.");
-//     }
-
-//     //Delete dynamically allocated memory associated with the current object (this), preventing memory leaks.
-//     clean();
-
-//     plan_id = other.plan_id;
-//     status = other.status;
-//     life_quality_score = other.life_quality_score;
-//     economy_score = other.economy_score;
-//     environment_score = other.environment_score;
-
-//     // Deep copy the selection policy using clone()
-//     if (other.selectionPolicy) {
-//         selectionPolicy = other.selectionPolicy->clone(); // Use clone() to avoid slicing
-//     } else {
-//         selectionPolicy = nullptr; // Handle case where the other policy is null
-//     }
-
-//     // Deep copy facilities and underConstruction
-//     for (Facility *facility : other.facilities)
-//     {
-//         facilities.push_back(new Facility(*facility));
-//     }
-//     for (Facility *facility : other.underConstruction)
-//     {
-//         underConstruction.push_back(new Facility(*facility));
-//     }
-
-//     return *this;
-// }
-
 // Move Constructor
 Plan::Plan(Plan &&other)
     // Transfer ownership of resources from the source object (other) to this new instance.
@@ -135,44 +86,6 @@ Plan::Plan(Plan &&other)
     other.underConstruction.clear();      // Optional: leave other in a valid empty state
     other.status = PlanStatus::AVALIABLE; // Reset status to a default state
 }
-
-// Move Assignment Operator
-// Plan &Plan::operator=(Plan &&other) {
-//     //Check for self-assignment to avoid unnecessary work and potential issues.
-//     if (this == &other) 
-//     {
-//         return *this;
-//     }
-//     // Make sure settlements are equal
-//     if (!settlement.isEqual(other.settlement))
-//     {
-//         throw std::invalid_argument("Cannot assign plans to different settlements.");
-//     }
-//     // Make sure facility options are the same
-//     if (&facilityOptions != &other.facilityOptions)
-//     {
-//         throw std::invalid_argument("Cannot assign plans with different facility options.");
-//     }
-
-//     //Release any dynamically allocated memory owned by the current object (this) to prevent memory leaks.
-//     clean();
-
-//     //Adopt the resources from the source object (other), efficiently transferring ownership.
-//     plan_id = other.plan_id;
-//     status = other.status;
-//     life_quality_score = other.life_quality_score;
-//     economy_score = other.economy_score;
-//     environment_score = other.environment_score;
-
-//     facilities = std::move(other.facilities);// Move vector
-//     underConstruction = std::move(other.underConstruction); // Move vector
-
-//     // Transfer ownership of selectionPolicy
-//     selectionPolicy = other.selectionPolicy;
-//     other.selectionPolicy = nullptr; // Nullify other’s pointer to prevent double deletion
-
-//     return *this;
-// }
 
 // Destructor
 Plan::~Plan() {
@@ -306,15 +219,6 @@ void Plan::printStatus() {
 void Plan::addFacility(Facility *facility) {
     // Add the newly created facility to the underConstruction list
     underConstruction.push_back(facility);
-
-    // Check if the current selection policy is of type BalancedSelection using dynamic_cast.
-    // If the cast succeeds, update the BalancedSelection scores with the plan's updated scores.
-    // BalancedSelection *balancedPolicy = dynamic_cast<BalancedSelection *>(selectionPolicy);
-    // if (balancedPolicy) {
-    //     balancedPolicy->setLifeQualityScore(life_quality_score + facility->getLifeQualityScore());
-    //     balancedPolicy->setEconomyScore(economy_score + facility->getEconomyScore());
-    //     balancedPolicy->setEnvironmentScore(environment_score + facility->getEnvironmentScore());
-    // }
 }
 
 const string Plan::toString() const {
@@ -354,83 +258,3 @@ const string Plan::toString() const {
 
     return output.str();
 }
-
-
-
-
-//Test!!!!!!!!!!!!!!!!!!!!!!!!!!
-// #include <vector>
-
-// using namespace std;
-
-// void testSelectionPolicies() {
-//     // Create a settlement
-//     Settlement settlement("TestCity", SettlementType::CITY); // City allows 2 facilities at a time
-
-//     // Define independent facility types for each policy
-//     vector<FacilityType> naiveFacilities = {
-//         FacilityType("School", FacilityCategory::LIFE_QUALITY, 5, 10, 5, 3),
-//         FacilityType("Factory", FacilityCategory::ECONOMY, 8, 2, 15, 1)
-//     };
-
-//     vector<FacilityType> balancedFacilities = {
-//         FacilityType("School", FacilityCategory::LIFE_QUALITY, 5, 10, 5, 3),
-//         FacilityType("Park", FacilityCategory::ENVIRONMENT, 6, 3, 2, 10)
-//     };
-
-//     vector<FacilityType> economyFacilities = {
-//         FacilityType("Factory", FacilityCategory::ECONOMY, 8, 2, 15, 1),
-//         FacilityType("Office", FacilityCategory::ECONOMY, 4, 1, 12, 0)
-//     };
-
-//     vector<FacilityType> sustainabilityFacilities = {
-//         FacilityType("Park", FacilityCategory::ENVIRONMENT, 6, 3, 2, 10),
-//         FacilityType("Nature Reserve", FacilityCategory::ENVIRONMENT, 7, 5, 3, 15)
-//     };
-
-//     // Define policies and their corresponding facilities
-//     vector<pair<string, pair<SelectionPolicy*, vector<FacilityType>>>> policies = {
-//         {"Naive", {new NaiveSelection(), naiveFacilities}},
-//         {"Balanced", {new BalancedSelection(0, 0, 0), balancedFacilities}},
-//         {"Economy", {new EconomySelection(), economyFacilities}},
-//         {"Sustainability", {new SustainabilitySelection(), sustainabilityFacilities}}
-//     };
-
-//     // Test each policy
-//     for (size_t i = 0; i < policies.size(); ++i) {
-//         const string& policyName = policies[i].first;
-//         SelectionPolicy* policy = policies[i].second.first;
-//         const vector<FacilityType>& facilities = policies[i].second.second;
-
-//         // **NEW**: Display facilities available for this policy
-//         cout << "\nFacilities Available for " << policyName << " Policy:\n";
-//         for (const auto& facility : facilities) {
-//             cout << "- " << facility.getName() 
-//                  << " (Category: " << static_cast<int>(facility.getCategory()) << ")\n";
-//         }
-
-//         // Create a plan for the policy
-//         Plan plan(i + 1, settlement, policy, facilities);
-
-//         // Display initial status
-//         cout << "\nTesting " << policyName << " Selection Policy:\n";
-//         plan.printStatus();
-
-//         // Simulate one step
-//         try {
-//             plan.step();
-//             plan.printStatus();
-//         } catch (const exception& e) {
-//             cerr << "Exception occurred during step: " << e.what() << endl;
-//         }
-//     }
-// }
-
-// int main() {
-//     try {
-//         testSelectionPolicies();
-//     } catch (const exception& e) {
-//         cerr << "Exception occurred: " << e.what() << endl;
-//     }
-//     return 0;
-// }
