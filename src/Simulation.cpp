@@ -311,99 +311,93 @@ void Simulation::start() {
     
     isRunning = true; // Set the simulation state to running
 
-    while (isRunning) {                      
-        std::cout << "> "; // Prompt the user
-        std::string input;
-        std::getline(std::cin, input); // Read the full user input as a single line
+    while (isRunning) {
+        try {
+            std::cout << "> "; // Prompt the user
+            std::string input;
+            std::getline(std::cin, input); // Read the full user input as a single line
 
-        std::istringstream iss(input); // Parse the input into tokens
-        std::string command;
-        iss >> command; // Extract the first token as the command
+            std::istringstream iss(input); // Parse the input into tokens
+            std::string command;
+            iss >> command; // Extract the first token as the command
 
-        if (command == "step") {
-            int numOfSteps;
-            iss >> numOfSteps; // Attempt to extract the number of steps
-            if (iss.fail() || numOfSteps <= 0) {
-                throw std::runtime_error("Invalid input for step");
-            }
-            SimulateStep action(numOfSteps); // Create an action for simulating steps
-            action.act(*this);
-        }
-        else if (command == "plan") {
-            std::string settlementName, selectionPolicy;
-            iss >> settlementName >> selectionPolicy; // Extract settlement and policy
-            if (settlementName.empty() || selectionPolicy.empty()) {
-                throw std::runtime_error("Invalid input for plan");
-            }
-            AddPlan action(settlementName, selectionPolicy); // Add a plan
-            action.act(*this);
-        }
-        else if (command == "settlement") {
-            std::string settlementName;
-            int settlementTypeInt;
-            iss >> settlementName >> settlementTypeInt; // Extract settlement name and type as an int
-            if (settlementName.empty() || iss.fail() || settlementTypeInt < 0 || settlementTypeInt > 2) {
-                throw std::runtime_error("Invalid input for settlement");
-            }
+            if (command == "step") {
+                int numOfSteps;
+                iss >> numOfSteps; // Attempt to extract the number of steps
+                if (iss.fail() || numOfSteps <= 0) {
+                    throw std::runtime_error("Invalid input for step");
+                }
+                SimulateStep action(numOfSteps); // Create an action for simulating steps
+                action.act(*this);
+            } else if (command == "plan") {
+                std::string settlementName, selectionPolicy;
+                iss >> settlementName >> selectionPolicy; // Extract settlement and policy
+                if (settlementName.empty() || selectionPolicy.empty()) {
+                    throw std::runtime_error("Invalid input for plan");
+                }
+                AddPlan action(settlementName, selectionPolicy); // Add a plan
+                action.act(*this);
+            } else if (command == "settlement") {
+                std::string settlementName;
+                int settlementTypeInt;
+                iss >> settlementName >> settlementTypeInt; // Extract settlement name and type as an int
+                if (settlementName.empty() || iss.fail() || settlementTypeInt < 0 || settlementTypeInt > 2) {
+                    throw std::runtime_error("Invalid input for settlement");
+                }
 
-            // Convert integer to SettlementType using static_cast
-            // `static_cast` ensures a safe and explicit conversion to an enum type.
-            SettlementType settlementType = static_cast<SettlementType>(settlementTypeInt);
+                // Convert integer to SettlementType using static_cast
+                SettlementType settlementType = static_cast<SettlementType>(settlementTypeInt);
 
-            AddSettlement action(settlementName, settlementType); // Add a settlement
-            action.act(*this);
-        }
-        else if (command == "facility") {
-            std::string facilityName;
-            int category, price, lifeQ, economy, environment;
-            iss >> facilityName >> category >> price >> lifeQ >> economy >> environment; // Extract facility details
-            if (facilityName.empty() || iss.fail() || category < 0 || category > 2 || price < 0 || lifeQ < 0 || economy < 0 || environment < 0) {
-                throw std::runtime_error("Invalid input for facility");
-            }
+                AddSettlement action(settlementName, settlementType); // Add a settlement
+                action.act(*this);
+            } else if (command == "facility") {
+                std::string facilityName;
+                int category, price, lifeQ, economy, environment;
+                iss >> facilityName >> category >> price >> lifeQ >> economy >> environment; // Extract facility details
+                if (facilityName.empty() || iss.fail() || category < 0 || category > 2 || price < 0 || lifeQ < 0 || economy < 0 || environment < 0) {
+                    throw std::runtime_error("Invalid input for facility");
+                }
 
-            // Convert integer to FacilityCategory using static_cast
-            FacilityCategory facilityCategory = static_cast<FacilityCategory>(category);
+                // Convert integer to FacilityCategory using static_cast
+                FacilityCategory facilityCategory = static_cast<FacilityCategory>(category);
 
-            AddFacility action(facilityName, facilityCategory, price, lifeQ, economy, environment); // Add a facility
-            action.act(*this);
-        }
-        else if (command == "planStatus") {
-            int planId;
-            iss >> planId; // Extract plan ID
-            if (iss.fail()) {
-                throw std::runtime_error("Invalid input for planStatus");
+                AddFacility action(facilityName, facilityCategory, price, lifeQ, economy, environment); // Add a facility
+                action.act(*this);
+            } else if (command == "planStatus") {
+                int planId;
+                iss >> planId; // Extract plan ID
+                if (iss.fail()) {
+                    throw std::runtime_error("Invalid input for planStatus");
+                }
+                PrintPlanStatus action(planId); // Print the status of a specific plan
+                action.act(*this);
+            } else if (command == "changePolicy") {
+                int planId;
+                std::string newPolicy;
+                iss >> planId >> newPolicy; // Extract plan ID and new policy
+                if (iss.fail() || newPolicy.empty()) {
+                    throw std::runtime_error("Invalid input for changePolicy");
+                }
+                ChangePlanPolicy action(planId, newPolicy); // Change the policy of a specific plan
+                action.act(*this);
+            } else if (command == "log") {
+                PrintActionsLog action; // Log all actions taken
+                action.act(*this);
+            } else if (command == "backup") {
+                BackupSimulation action; // Backup the current simulation state
+                action.act(*this);
+            } else if (command == "restore") {
+                RestoreSimulation action; // Restore the simulation from backup
+                action.act(*this);
+            } else if (command == "close") {
+                Close action; // Close the simulation
+                action.act(*this);
+            } else {
+                throw std::runtime_error("Unknown command"); // Handle invalid commands
             }
-            PrintPlanStatus action(planId); // Print the status of a specific plan
-            action.act(*this);
-        }
-        else if (command == "changePolicy") {
-            int planId;
-            std::string newPolicy;
-            iss >> planId >> newPolicy; // Extract plan ID and new policy
-            if (iss.fail() || newPolicy.empty()) {
-                throw std::runtime_error("Invalid input for changePolicy");
-            }
-            ChangePlanPolicy action(planId, newPolicy); // Change the policy of a specific plan
-            action.act(*this);
-        }
-        else if (command == "log") {
-            PrintActionsLog action; // Log all actions taken
-            action.act(*this);
-        }
-        else if (command == "backup") {
-            BackupSimulation action; // Backup the current simulation state
-            action.act(*this);
-        }
-        else if (command == "restore") {
-            RestoreSimulation action; // Restore the simulation from backup
-            action.act(*this);
-        }
-        else if (command == "close") {
-            Close action; // Close the simulation
-            action.act(*this);
-        }
-        else {
-            throw std::runtime_error("Unknown command"); // Handle invalid commands
+        } catch (const std::exception &e) {
+            // Print the error message and continue the loop
+            std::cerr << "Error: " << e.what() << std::endl;
         }
     }
 }
