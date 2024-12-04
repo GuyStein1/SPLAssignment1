@@ -125,14 +125,20 @@ Simulation::Simulation(const Simulation &other)
         actionsLog.push_back(action->clone());
     }
 
-    // Deep copy of plans: Use the Plan copy constructor to duplicate plans.
-    for (Plan plan : other.plans) {
-        plans.push_back(Plan(plan)); 
-    }
-
     // Deep copy of settlements: Dynamically allocate and copy each Settlement.
     for (Settlement* settlement : other.settlements) {
         settlements.push_back(new Settlement(*settlement));
+    }
+
+    // Deep copy of plans:
+    // Each Plan references a Settlement. When copying, the Settlement pointers must be updated to point to the newly created copies in `settlements`.
+    for (Plan plan : other.plans) {
+        // Retrieve the name of the Settlement associated with the plan.
+        std::string name = plan.getSettlement().getName();
+        // Find the corresponding Settlement in the copied settlements vector.
+        Settlement* s = &getSettlement(name); 
+        // Create a new Plan using the copy constructor with settlement.
+        plans.push_back(Plan(plan, *s)); 
     }
 
     // Copy of facilitiesOptions: Since FacilityType has no dynamic members, use its copy constructor.
@@ -148,8 +154,13 @@ Simulation &Simulation::operator=(const Simulation &other) {
         return *this;
     }
 
+    //----Clean the state of 'this'----
+
     // Clear plans (no dynamic allocation in Plan, so just clear the vector).
     plans.clear();
+
+    // Clear the facilitiesOptions vector (shallow clear as FacilityType doesn't use dynamic memory).
+    facilitiesOptions.clear();
 
     // Free dynamically allocated actions and clear the actions log.
     for (BaseAction* action : actionsLog) {
@@ -157,51 +168,40 @@ Simulation &Simulation::operator=(const Simulation &other) {
     }
     actionsLog.clear();
 
-    // Clear the facilitiesOptions vector (shallow clear as FacilityType doesn't use dynamic memory).
-    facilitiesOptions.clear();
-
-    // Delete settlements in `this->settlements` that do not exist in `other.settlements`:
-
-    // Temporary vector to hold settlements that will be retained.
-    vector<Settlement*> retainedSettlements;
-    // Iterate through settlements in `this->settlements`.
+    // Free dynamically allocated settlements
     for (Settlement* settlement : settlements) {
-        bool found = false;
-        // Check if the settlement exists in `other.settlements`.
-        for (Settlement* otherSettlement : other.settlements) {
-            if (otherSettlement->getName() == settlement->getName()) {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            // Retain the settlement if it exists in `other.settlements`.
-            retainedSettlements.push_back(settlement);
-        } else {
-            // If the settlement exists only in `this`:
-            // - It is not used in the new state represented by `other`.
-            // - Dynamically allocated memory associated with it is no longer needed.
-            // - Deleting it avoids memory leaks and keeps the simulation state clean.
-            delete settlement;
-        }
+        delete settlement;
     }
+    settlements.clear(); 
 
-    // Replace `this->settlements` with the retained settlements.
-    settlements = retainedSettlements;
+    //----Copy 'other' to 'this'----
 
     // Copy primitive and value-based members.
     isRunning = other.isRunning;
     planCounter = other.planCounter;
 
-    // Deep copy dynamically allocated members other than settlements (already handled above).
+    // Deep copy actionsLog
     for (BaseAction* action : other.actionsLog) {
         actionsLog.push_back(action->clone()); // Clone each action in the log.
     }
 
-    for (Plan plan : other.plans) {
-        plans.push_back(Plan(plan)); // Copy each Plan using its copy constructor.
+    // Deep copy of settlements: Dynamically allocate and copy each Settlement.
+    for (Settlement* settlement : other.settlements) {
+        settlements.push_back(new Settlement(*settlement));
     }
 
+    // Deep copy of plans:
+    // Each Plan references a Settlement. When copying, the Settlement pointers must be updated to point to the newly created copies in `settlements`.
+    for (Plan plan : other.plans) {
+        // Retrieve the name of the Settlement associated with the plan.
+        std::string name = plan.getSettlement().getName();
+        // Find the corresponding Settlement in the copied settlements vector.
+        Settlement* s = &getSettlement(name); 
+        // Create a new Plan using the copy constructor with settlement.
+        plans.push_back(Plan(plan, *s)); 
+    }
+
+    // Deep copy facilitiesOptions
     for (FacilityType facility : other.facilitiesOptions) {
         facilitiesOptions.push_back(FacilityType(facility)); // Copy FacilityType objects.
     }
@@ -213,7 +213,6 @@ Simulation &Simulation::operator=(const Simulation &other) {
 Simulation::Simulation(Simulation &&other)
     : isRunning(other.isRunning),
       planCounter(other.planCounter),
-
       // Use std::move for efficient ownership transfer, avoiding deep copying.
       actionsLog(std::move(other.actionsLog)),   
       plans(std::move(other.plans)),             
@@ -231,45 +230,35 @@ Simulation &Simulation::operator=(Simulation &&other) {
         return *this;
     }
 
-    // Iterate through settlements in `this->settlements` and delete only those not in `other.settlements`.
-    for (Settlement* settlement : settlements) {
-        bool found = false;
-        // Check if the settlement exists in `other.settlements`.
-        for (Settlement* otherSettlement : other.settlements) {
-            if (otherSettlement->getName() == settlement->getName()) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            // Settlement exists only in `this`, delete it.
-            delete settlement;
-        }
-    }
+    //----Clean the state of 'this'----
 
-    // Overwrite `this->settlements` with `other.settlements` using std::move.
-    settlements = std::move(other.settlements);
-
-    // Clear `this->plans` as they will be replaced by `other.plans` below.
+    // Clear plans and facilitiesOptions. No dynamic memory to free here.
     plans.clear();
+    facilitiesOptions.clear();
 
     // Free dynamically allocated actions in `this->actionsLog`.
     for (BaseAction* action : actionsLog) {
         delete action;
     }
     actionsLog.clear();
-    
-    // Clear `this->facilitiesOptions` (shallow clear as FacilityType doesn't use dynamic memory).
-    facilitiesOptions.clear();
 
-    // Move other resources into `this` to transfer ownership.
-    actionsLog = std::move(other.actionsLog);
-    plans = std::move(other.plans);
-    facilitiesOptions = std::move(other.facilitiesOptions);
+    // Free dynamically allocated settlements
+    for (Settlement* settlement : settlements) {
+        delete settlement;
+    }
+    settlements.clear(); 
+
+    //----Move 'other' to 'this'----
 
     // Copy primitive and value-based members from `other`.
     isRunning = other.isRunning;
     planCounter = other.planCounter;
+
+    // Move other resources into `this` to transfer ownership.
+    settlements = std::move(other.settlements);
+    actionsLog = std::move(other.actionsLog);
+    plans = std::move(other.plans);
+    facilitiesOptions = std::move(other.facilitiesOptions);
 
     // Leave `other` in a valid empty state to ensure safe destruction.
     // This makes it clear that `other` is no longer usable after the move.
@@ -285,6 +274,7 @@ Simulation &Simulation::operator=(Simulation &&other) {
 
 // Destructor
 Simulation::~Simulation() {
+
     // Free dynamically allocated actions
     for (BaseAction* action : actionsLog) {
         delete action;
@@ -295,7 +285,7 @@ Simulation::~Simulation() {
     for (Settlement* settlement : settlements) {
         delete settlement;
     }
-    settlements.clear(); // Prevents dangling pointers, though the destructor handles it.
+    settlements.clear(); // Ensures a clean state before destruction, though not strictly necessary.
 
     // Clear plans (no dynamic allocation, just reset the vector)
     plans.clear(); // Optional but ensures explicit reset of the vector.

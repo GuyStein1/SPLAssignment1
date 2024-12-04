@@ -21,6 +21,9 @@ class Plan {
         Plan &operator=(Plan &&other); // Move assignment operator
         ~Plan(); // Destructor
 
+        // Copy Constructor with settlement: Allows copying a plan while associating it with a new settlement refrence.
+        Plan(const Plan &other, const Settlement &settlement);
+
         //Getter for plan_id
         int getID() const;
 

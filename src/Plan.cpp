@@ -43,6 +43,30 @@ Plan::Plan(const Plan &other)
     }
 }
 
+// Copy Constructor with settlement: Allows copying a plan while associating it with a new settlement refrence.
+Plan::Plan(const Plan &other, const Settlement &settlement)
+    // Create a new object as a copy of an existing object
+    : plan_id(other.plan_id),
+      settlement(settlement),
+      // Create a deep copy of the selection policy using its `clone` method
+      selectionPolicy(other.selectionPolicy->clone()),
+      status(other.status),
+      facilities(),
+      underConstruction(),
+      facilityOptions(other.facilityOptions),
+      life_quality_score(other.life_quality_score),
+      economy_score(other.economy_score),
+      environment_score(other.environment_score) {
+
+    // Deep copy facilities and underConstruction to avoid shared ownership of dynamically allocated objects
+    for (Facility *facility : other.facilities) {
+        facilities.push_back(new Facility(*facility));
+    }
+    for (Facility *facility : other.underConstruction) {
+        underConstruction.push_back(new Facility(*facility));
+    }
+}
+
 // Move Constructor
 Plan::Plan(Plan &&other)
     // Transfer ownership of resources from the source object (other) to this new instance
