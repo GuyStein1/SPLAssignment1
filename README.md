@@ -33,6 +33,7 @@ The project is written in **C++**, following strict OOP principles and the **Rul
 **Compile:**
 ```bash
 make
+```
 
 
 **Run:**
