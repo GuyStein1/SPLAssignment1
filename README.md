@@ -32,8 +32,8 @@ The project is written in **C++**, following strict OOP principles and the **Rul
 
 **Compile:**
 ```bash
-g++ -std=c++11 -Wall -Wextra *.cpp -o simulation
-```
+make
+
 
 **Run:**
 ```bash
@@ -122,7 +122,7 @@ plan KiryatSPL bal
 
 ---
 
-Authors:
- - Guy Stein
- - Guy Zilberstein
+## Authors
+- Guy Stein
+- Guy Zilberstein
 
